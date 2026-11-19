@@ -124,7 +124,8 @@ def cifre():
 def main():
     tex = os.path.join(QUI, "assets", "mfr", "textures", "font")
     os.makedirs(tex, exist_ok=True)
-    sfondo().save(os.path.join(tex, "banco_schermata.png"), optimize=True)
+    # I font del client accettano solo immagini RGBA: in RGB il carattere non si carica.
+    sfondo().convert("RGBA").save(os.path.join(tex, "banco_schermata.png"), optimize=True)
     img, larghezze, cella_h = cifre()
     img.save(os.path.join(tex, "banco_saldo.png"), optimize=True)
     scala = 8 / cella_h
