@@ -29,8 +29,8 @@
     {
       "type": "bitmap",
       "file": "mfr:font/banco_incudine.png",
-      "height": 64,
-      "ascent": 61,
+      "height": 42,
+      "ascent": 13,
       "chars": [
         "\ue040\ue041\ue042\ue043",
         "\u0000\u0000\u0000\u0000",
@@ -41,8 +41,8 @@
     {
       "type": "bitmap",
       "file": "mfr:font/banco_incudine.png",
-      "height": 64,
-      "ascent": -3,
+      "height": 42,
+      "ascent": -29,
       "chars": [
         "\u0000\u0000\u0000\u0000",
         "\ue044\ue045\ue046\ue047",
@@ -53,8 +53,8 @@
     {
       "type": "bitmap",
       "file": "mfr:font/banco_incudine.png",
-      "height": 64,
-      "ascent": -67,
+      "height": 42,
+      "ascent": -71,
       "chars": [
         "\u0000\u0000\u0000\u0000",
         "\u0000\u0000\u0000\u0000",
@@ -65,8 +65,8 @@
     {
       "type": "bitmap",
       "file": "mfr:font/banco_incudine.png",
-      "height": 64,
-      "ascent": -131,
+      "height": 42,
+      "ascent": -113,
       "chars": [
         "\u0000\u0000\u0000\u0000",
         "\u0000\u0000\u0000\u0000",

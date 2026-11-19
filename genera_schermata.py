@@ -207,10 +207,10 @@ def font_finestra():
 
 # --- "Importo a scelta": schermata dell'incudine (176 x 166) con lo sfondo disegnato ---
 # Il campo di testo dell'incudine è disegnato PRIMA del titolo: lo sfondo ha un buco trasparente sopra il campo
-# (x 60-168, y 21-35), dove si vedono il campo nero dell'incudine e la cifra scritta. Lo stemma ridotto sporge
-# sopra la finestra; il saldo va nella targa in alto (font mfr:incudine).
-INC_W, INC_H, INC_SOPRA = 176, 166, 48
-INC_TASSELLO_H = 256                                    # 4 righe da 64 pixel di interfaccia (ascent <= height)
+# (x 60-168, y 21-35), dove si vedono il campo dell'incudine e la cifra scritta. Il saldo va nella targa in alto
+# (font mfr:incudine). La casella 0 (segnaposto "Cancella") e quella del risultato hanno la cornice.
+INC_W, INC_H, INC_SOPRA = 176, 166, 0                   # niente stemma sopra la finestra (richiesta del 20/11)
+INC_TASSELLO_H = 168                                    # 4 righe da 42 pixel di interfaccia: tutte con parti opache
 PRIMO_INCUDINE = 0xE040
 INC_SALDO_ASCENT = 7                                    # cifre alte 8 a y = 6..14, al centro della targa
 BUCO = (60, 21, 168, 35)                                # dentro lo sprite del campo (59, 20, 110 x 16)
@@ -255,9 +255,6 @@ def incudine():
     for y in range(O * S, (O + INC_H) * S, 2):
         d.line([(0, y), (INC_W * S, y)], fill=(VIOLA_SCURO if (y // 2) % 3 == 0 else VIOLA) + (255,))
     cornice(d, 0, O, INC_W, O + INC_H, spessore=2)
-    # Stemma ridotto (arco, BANCO MAGICO, DEL FIDORO) appoggiato sopra la finestra.
-    stemma = alto.crop((0, 0, W * S, 65 * S)).resize((130 * S, 48 * S), Image.LANCZOS)
-    img.alpha_composite(stemma, ((INC_W - 130) * S // 2, 0))
     # Targa del saldo in alto nella finestra (il saldo lo scrive il plugin).
     targa = alto.crop((29 * S, 66 * S, 147 * S, 88 * S))
     targa = targa.resize((round(targa.width * 18 / 22), 18 * S), Image.LANCZOS)
