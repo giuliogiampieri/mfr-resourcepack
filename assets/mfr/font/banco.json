@@ -28,10 +28,49 @@
     {
       "type": "bitmap",
       "file": "mfr:font/banco_schermata.png",
-      "height": 222,
+      "height": 56,
       "ascent": 13,
       "chars": [
-        "\ue010"
+        "\ue020\ue021\ue022\ue023",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_schermata.png",
+      "height": 56,
+      "ascent": -43,
+      "chars": [
+        "\u0000\u0000\u0000\u0000",
+        "\ue024\ue025\ue026\ue027",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_schermata.png",
+      "height": 56,
+      "ascent": -99,
+      "chars": [
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\ue028\ue029\ue02a\ue02b",
+        "\u0000\u0000\u0000\u0000"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_schermata.png",
+      "height": 56,
+      "ascent": -155,
+      "chars": [
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\ue02c\ue02d\ue02e\ue02f"
       ]
     }
   ]

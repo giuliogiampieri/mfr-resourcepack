@@ -3,9 +3,14 @@
 
 Uso: python3 genera_schermata.py   (poi python3 costruisci.py)
 
-La schermata è una finestra tipo baule da 6 righe (176 x 222 pixel di interfaccia). Lo sfondo è un carattere
-del font mfr:banco disegnato sopra la finestra; il saldo è scritto con le cifre del font mfr:saldo.
-Tutto è disegnato a 4x (704 x 888) per restare nitido con la scala dell'interfaccia 2-4.
+La schermata è una finestra tipo baule da 6 righe (176 x 222 pixel di interfaccia), disegnata a 4x (704 x 888)
+per restare nitida con la scala dell'interfaccia 2-4. Il saldo è scritto con le cifre del font mfr:saldo.
+
+Il client mette i caratteri dei font in pagine da 256 x 256 pixel (FontTexture.SIZE nel client 26.3): un
+carattere più grande non entra e al suo posto compare il quadratino del carattere mancante. Per questo lo
+sfondo è diviso in 4 x 4 tasselli da 176 x 224 pixel (44 x 56 di interfaccia), i caratteri da \uE020 a \uE02F
+(riga r, colonna c -> \uE020 + 4r + c); il plugin li compone riga per riga (BancoMagico.titolo()).
+Lo script scrive anche assets/mfr/font/banco.json (un provider per riga di tasselli, ognuno con il suo ascent).
 Stampa le larghezze delle cifre da copiare in BancoMagico.java (LARGHEZZE_SALDO).
 """
 import json
@@ -121,11 +126,46 @@ def cifre():
     return img, larghezze, cella_h
 
 
+RIGHE, COLONNE = 4, 4
+TASSELLO_W, TASSELLO_H = W * S // COLONNE, 224          # 176 x 224 pixel di texture, <= 256
+PRIMO_TASSELLO = 0xE020
+ASCENT_FINESTRA = 13                                    # con il titolo a y = 6, ascent 13 = bordo alto della finestra
+
+
+def spostamenti():
+    """Caratteri di spazio del font mfr:banco: \uF801.. = -1, -2, -4 ... -512; \uF821.. = +1, +2 ... +512."""
+    adv = {}
+    for i in range(10):
+        adv[chr(0xF801 + i)] = -(1 << i)
+        adv[chr(0xF821 + i)] = 1 << i
+    return {"type": "space", "advances": adv}
+
+
+def font_banco():
+    providers = [spostamenti()]
+    alto = TASSELLO_H // S                              # 56 pixel di interfaccia per riga di tasselli
+    for riga in range(RIGHE):
+        griglia = []
+        for rr in range(RIGHE):
+            if rr == riga:
+                griglia.append("".join(chr(PRIMO_TASSELLO + riga * COLONNE + c) for c in range(COLONNE)))
+            else:
+                griglia.append("\u0000" * COLONNE)    # celle delle altre righe: saltate dal client
+        providers.append({"type": "bitmap", "file": "mfr:font/banco_schermata.png", "height": alto,
+                          "ascent": ASCENT_FINESTRA - riga * alto, "chars": griglia})
+    return {"providers": providers}
+
+
 def main():
     tex = os.path.join(QUI, "assets", "mfr", "textures", "font")
     os.makedirs(tex, exist_ok=True)
     # I font del client accettano solo immagini RGBA: in RGB il carattere non si carica.
-    sfondo().convert("RGBA").save(os.path.join(tex, "banco_schermata.png"), optimize=True)
+    tela = Image.new("RGBA", (COLONNE * TASSELLO_W, RIGHE * TASSELLO_H), (0, 0, 0, 0))   # 704 x 896
+    tela.paste(sfondo().convert("RGBA"), (0, 0))        # gli ultimi 8 pixel in fondo restano trasparenti
+    tela.save(os.path.join(tex, "banco_schermata.png"), optimize=True)
+    with open(os.path.join(QUI, "assets", "mfr", "font", "banco.json"), "w", encoding="utf-8") as f:
+        json.dump(font_banco(), f, indent=2)
+        f.write("\n")
     img, larghezze, cella_h = cifre()
     img.save(os.path.join(tex, "banco_saldo.png"), optimize=True)
     scala = 8 / cella_h
