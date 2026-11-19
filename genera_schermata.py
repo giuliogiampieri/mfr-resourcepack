@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Genera la schermata del Banco Magico (sfondo a tutta finestra e cifre del saldo) dal disegno del proprietario.
+"""Genera le schermate del Banco Magico (banco tipo baule, "Importo a scelta" sull'incudine, cifre del saldo) dal disegno del proprietario.
 
 Uso: python3 genera_schermata.py   (poi python3 costruisci.py)
 
@@ -169,25 +169,6 @@ def font_banco():
     return {"providers": providers}
 
 
-# --- finestra "Importo a scelta" (finestra di dialogo del gioco) ---
-# Nel corpo della finestra il plugin scrive una riga con il font mfr:finestra: la parte alta del disegno (stemma,
-# BANCO MAGICO, DEL FIDORO, targa) in 2 x 4 tasselli da 176 x 176 (\uE030..\uE037) e il saldo vero nella targa.
-STEMMA_RIGHE, STEMMA_ALTO = 2, 176                      # 704 x 352 pixel di texture = 176 x 88 di interfaccia
-PRIMO_STEMMA = 0xE030
-ASCENT_RIGA = 7                                         # ascent 7 = cima della riga di testo
-SALDO_FINESTRA_ASCENT = -66                             # cifre (alte 8) centrate nella targa, a y = 73..81
-
-
-def stemma():
-    ref = Image.open(SORGENTE).convert("RGB").copy()
-    striscia = ref.crop((318, 455, 334, 527))           # come in sfondo(): via la scritta d'esempio e le monetine
-    for x in range(236, 888, striscia.width):
-        ref.paste(striscia, (x, 455))
-    alto_ref = round(STEMMA_RIGHE * STEMMA_ALTO * ref.width / (W * S))
-    img = ref.crop((0, 0, ref.width, alto_ref)).resize((W * S, STEMMA_RIGHE * STEMMA_ALTO), Image.LANCZOS)
-    return trasparente_fuori(img.convert("RGBA"))
-
-
 def trasparente_fuori(img, soglia=40, colore=(0, 0, 0, 0)):
     """Il nero intorno al disegno (angoli sopra l'arco) diventa trasparente, o del colore dato: si parte dal bordo
     alto e dai lati dell'immagine e si allarga a tutti i pixel quasi neri collegati. Il nero dentro il disegno resta."""
@@ -224,6 +205,103 @@ def font_finestra():
     return {"providers": providers}
 
 
+# --- "Importo a scelta": schermata dell'incudine (176 x 166) con lo sfondo disegnato ---
+# Il campo di testo dell'incudine è disegnato PRIMA del titolo: lo sfondo ha un buco trasparente sopra il campo
+# (x 60-168, y 21-35), dove si vedono il campo nero dell'incudine e la cifra scritta. Lo stemma ridotto sporge
+# sopra la finestra; il saldo va nella targa in alto (font mfr:incudine).
+INC_W, INC_H, INC_SOPRA = 176, 166, 48
+INC_TASSELLO_H = 256                                    # 4 righe da 64 pixel di interfaccia (ascent <= height)
+PRIMO_INCUDINE = 0xE040
+INC_SALDO_ASCENT = 7                                    # cifre alte 8 a y = 6..14, al centro della targa
+BUCO = (60, 21, 168, 35)                                # dentro lo sprite del campo (59, 20, 110 x 16)
+
+
+def disegno_alto():
+    """Parte alta del disegno (88 pixel di interfaccia) senza la scritta d'esempio, nero esterno trasparente."""
+    ref = Image.open(SORGENTE).convert("RGB").copy()
+    striscia = ref.crop((318, 455, 334, 527))
+    for x in range(236, 888, striscia.width):
+        ref.paste(striscia, (x, 455))
+    alto_ref = int(88 * S * ref.width / (W * S))
+    alto = ref.crop((0, 0, ref.width, alto_ref)).resize((W * S, 88 * S), Image.LANCZOS)
+    return ref, trasparente_fuori(alto.convert("RGBA"))
+
+
+def scritta(img, testo, cx, y, alto=8):
+    """Scritta dorata con ombra scura, maiuscole alte {alto} pixel di interfaccia, centrata in cx (interfaccia)."""
+    font = ImageFont.truetype(FONT_TTF, int(alto * S * 1.36))
+    maschera = Image.new("L", img.size, 0)
+    md = ImageDraw.Draw(maschera)
+    x0, y0, x1, y1 = md.textbbox((0, 0), testo, font=font)
+    cima = font.getbbox("I")[1]
+    md.text((cx * S - (x1 - x0) / 2 - x0, y * S - cima), testo, font=font, fill=255)
+    ombra = maschera.filter(ImageFilter.MaxFilter(3))
+    img.paste((48, 14, 6, 255), (S // 2, S // 2), ombra)
+    sfum = Image.new("RGBA", img.size)
+    sd = ImageDraw.Draw(sfum)
+    for yy in range(y * S, (y + alto) * S + 1):
+        t = max(0.0, min(1.0, (yy - y * S) / (alto * S)))
+        sd.line([(0, yy), (img.width, yy)], fill=tuple(int(ORO_CHIARO[j] * (1 - t) + ORO[j] * t) for j in range(3)) + (255,))
+    img.paste(sfum, (0, 0), maschera)
+
+
+def incudine():
+    ref, alto = disegno_alto()
+    img = Image.new("RGBA", (INC_W * S, (INC_SOPRA + INC_H) * S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    O = INC_SOPRA
+    # Corpo della finestra.
+    d.rectangle([0, O * S, INC_W * S - 1, (O + INC_H) * S - 1], fill=VIOLA + (255,))
+    for y in range(O * S, (O + INC_H) * S, 2):
+        d.line([(0, y), (INC_W * S, y)], fill=(VIOLA_SCURO if (y // 2) % 3 == 0 else VIOLA) + (255,))
+    cornice(d, 0, O, INC_W, O + INC_H, spessore=2)
+    # Stemma ridotto (arco, BANCO MAGICO, DEL FIDORO) appoggiato sopra la finestra.
+    stemma = alto.crop((0, 0, W * S, 65 * S)).resize((130 * S, 48 * S), Image.LANCZOS)
+    img.alpha_composite(stemma, ((INC_W - 130) * S // 2, 0))
+    # Targa del saldo in alto nella finestra (il saldo lo scrive il plugin).
+    targa = alto.crop((29 * S, 66 * S, 147 * S, 88 * S))
+    targa = targa.resize((round(targa.width * 18 / 22), 18 * S), Image.LANCZOS)
+    img.alpha_composite(targa, ((INC_W * S - targa.width) // 2, (O + 1) * S))
+    # Campo dell'importo: scritta a sinistra, cornice d'oro, buco trasparente sul campo dell'incudine.
+    scritta(img, "IMPORTO", 31, O + 25, alto=6)
+    d = ImageDraw.Draw(img)
+    cornice(d, BUCO[0] - 2, O + BUCO[1] - 2, BUCO[2] + 2, O + BUCO[3] + 2, spessore=1, fondo=(10, 3, 8))
+    d.rectangle(r(BUCO[0], O + BUCO[1], BUCO[2], O + BUCO[3]), fill=(0, 0, 0, 0))
+    # Riga delle caselle: moneta (casella 0), RITIRA -> risultato (casella 2). La casella 1 resta senza cornice.
+    casella(d, 27, O + 47)
+    scritta(img, "RITIRA", 108, O + 52, alto=7)
+    d = ImageDraw.Draw(img)
+    d.polygon([(124 * S, (O + 51) * S), (130 * S, (O + 55) * S), (124 * S, (O + 59) * S)], fill=ORO)
+    cornice(d, 131, O + 44, 153, O + 66, spessore=1)
+    casella(d, 134, O + 47, ricca=True)
+    # Targhetta per la scritta "Inventario" (y = 72) e inventario del giocatore (y = 84 e 142).
+    cornice(d, 5, O + 70, 66, O + 82, spessore=1, fondo=(214, 190, 140))
+    for rr in range(3):
+        for c in range(9):
+            casella(d, 8 + c * 18, O + 84 + rr * 18)
+    for c in range(9):
+        casella(d, 8 + c * 18, O + 142)
+    return img
+
+
+def font_incudine():
+    providers = [spostamenti()]
+    providers[0]["advances"][" "] = 3
+    alto = INC_TASSELLO_H // S                          # 64
+    for riga in range(RIGHE):
+        griglia = []
+        for rr in range(RIGHE):
+            if rr == riga:
+                griglia.append("".join(chr(PRIMO_INCUDINE + riga * COLONNE + c) for c in range(COLONNE)))
+            else:
+                griglia.append("\u0000" * COLONNE)
+        providers.append({"type": "bitmap", "file": "mfr:font/banco_incudine.png", "height": alto,
+                          "ascent": 13 + INC_SOPRA - riga * alto, "chars": griglia})
+    providers.append({"type": "bitmap", "file": "mfr:font/banco_saldo.png", "height": 8,
+                      "ascent": INC_SALDO_ASCENT, "chars": [CIFRE]})
+    return {"providers": providers}
+
+
 def main():
     tex = os.path.join(QUI, "assets", "mfr", "textures", "font")
     os.makedirs(tex, exist_ok=True)
@@ -234,9 +312,11 @@ def main():
     with open(os.path.join(QUI, "assets", "mfr", "font", "banco.json"), "w", encoding="utf-8") as f:
         json.dump(font_banco(), f, indent=2)
         f.write("\n")
-    stemma().save(os.path.join(tex, "banco_stemma.png"), optimize=True)
-    with open(os.path.join(QUI, "assets", "mfr", "font", "finestra.json"), "w", encoding="utf-8") as f:
-        json.dump(font_finestra(), f, indent=2)
+    tela = Image.new("RGBA", (COLONNE * TASSELLO_W, RIGHE * INC_TASSELLO_H), (0, 0, 0, 0))   # 704 x 1024
+    tela.paste(incudine(), (0, 0))
+    tela.save(os.path.join(tex, "banco_incudine.png"), optimize=True)
+    with open(os.path.join(QUI, "assets", "mfr", "font", "incudine.json"), "w", encoding="utf-8") as f:
+        json.dump(font_incudine(), f, indent=2)
         f.write("\n")
     with open(os.path.join(QUI, "assets", "mfr", "font", "saldo.json"), "w", encoding="utf-8") as f:
         json.dump({"providers": [{"type": "space", "advances": {" ": 3}},

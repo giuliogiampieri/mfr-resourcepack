@@ -1,0 +1,87 @@
+{
+  "providers": [
+    {
+      "type": "space",
+      "advances": {
+        "\uf801": -1,
+        "\uf821": 1,
+        "\uf802": -2,
+        "\uf822": 2,
+        "\uf803": -4,
+        "\uf823": 4,
+        "\uf804": -8,
+        "\uf824": 8,
+        "\uf805": -16,
+        "\uf825": 16,
+        "\uf806": -32,
+        "\uf826": 32,
+        "\uf807": -64,
+        "\uf827": 64,
+        "\uf808": -128,
+        "\uf828": 128,
+        "\uf809": -256,
+        "\uf829": 256,
+        "\uf80a": -512,
+        "\uf82a": 512,
+        " ": 3
+      }
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_incudine.png",
+      "height": 64,
+      "ascent": 61,
+      "chars": [
+        "\ue040\ue041\ue042\ue043",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_incudine.png",
+      "height": 64,
+      "ascent": -3,
+      "chars": [
+        "\u0000\u0000\u0000\u0000",
+        "\ue044\ue045\ue046\ue047",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_incudine.png",
+      "height": 64,
+      "ascent": -67,
+      "chars": [
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\ue048\ue049\ue04a\ue04b",
+        "\u0000\u0000\u0000\u0000"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_incudine.png",
+      "height": 64,
+      "ascent": -131,
+      "chars": [
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\u0000\u0000\u0000\u0000",
+        "\ue04c\ue04d\ue04e\ue04f"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_saldo.png",
+      "height": 8,
+      "ascent": 7,
+      "chars": [
+        "0123456789.:SALDOF"
+      ]
+    }
+  ]
+}
