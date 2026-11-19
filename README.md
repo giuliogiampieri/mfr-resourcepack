@@ -9,6 +9,10 @@ Resource pack pubblico di **Minecraft Fantasy Roleplay** (il codice del server �
 - Definizioni degli oggetti (`assets/minecraft/items/`): pepite d'oro e magnetite mostrano il disegno solo se
   l'oggetto porta il dato `custom_model_data` impostato dal plugin (`fidoro_<valore>`, `banco_magico`);
   altrimenti restano gli oggetti normali. Chi rifiuta il pack vede pepite d'oro con il nome della moneta.
+- **Schermata del banco** (finestra tipo baule da 6 righe): lo sfondo è un carattere del font `mfr:banco`
+  (``, con gli spostamenti ``–``), il saldo usa le cifre del font `mfr:saldo`. Le monete dei
+  pulsanti usano `assets/mfr/items/fidoro_<valore>.json` (componente `item_model`). Si rigenerano dal disegno in
+  `sorgenti/banco-schermata.png` con `python3 genera_schermata.py`.
 - `sorgenti/`: immagini originali fornite dal proprietario, da cui sono ricavate le texture.
 
 ## Costruire e pubblicare
