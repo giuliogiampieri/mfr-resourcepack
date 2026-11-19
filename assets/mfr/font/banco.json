@@ -1,0 +1,31 @@
+{
+  "providers": [
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_testa.png",
+      "height": 95,
+      "ascent": 7,
+      "chars": [
+        "\ue000"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_fondo.png",
+      "height": 48,
+      "ascent": 7,
+      "chars": [
+        "\ue001"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/banco_monete.png",
+      "height": 9,
+      "ascent": 8,
+      "chars": [
+        "\ue002"
+      ]
+    }
+  ]
+}
