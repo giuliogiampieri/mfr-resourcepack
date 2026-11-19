@@ -67,6 +67,8 @@ def sfondo():
     # Parte alta del disegno: stemma, BANCO MAGICO, DEL FIDORO, targa del saldo (fino a y = 88 di interfaccia).
     alto_ref = int(88 * S / k)
     alto = ref.crop((0, 0, ref.width, alto_ref)).resize((W * S, 88 * S), Image.LANCZOS)
+    # Nero intorno all'arco: dietro c'è la finestra grigia del baule, quindi niente trasparenza, ma il viola scuro.
+    alto = trasparente_fuori(alto.convert("RGBA"), colore=VIOLA_SCURO + (255,)).convert("RGB")
 
     img = Image.new("RGB", (W * S, H * S), VIOLA)
     d = ImageDraw.Draw(img)
@@ -175,20 +177,20 @@ def stemma():
     return trasparente_fuori(img.convert("RGBA"))
 
 
-def trasparente_fuori(img, soglia=40):
-    """Il nero intorno al disegno (angoli sopra l'arco) diventa trasparente: si parte dai bordi dell'immagine e si
-    allarga a tutti i pixel quasi neri collegati. Il nero dentro il disegno resta."""
+def trasparente_fuori(img, soglia=40, colore=(0, 0, 0, 0)):
+    """Il nero intorno al disegno (angoli sopra l'arco) diventa trasparente, o del colore dato: si parte dal bordo
+    alto e dai lati dell'immagine e si allarga a tutti i pixel quasi neri collegati. Il nero dentro il disegno resta."""
     w, h = img.size
     px = img.load()
-    scuro = lambda x, y: sum(px[x, y][:3]) < soglia
-    coda = [(x, y) for x in range(w) for y in (0, h - 1)] + [(x, y) for y in range(h) for x in (0, w - 1)]
+    scuro = lambda x, y: px[x, y][3] > 0 and sum(px[x, y][:3]) < soglia
+    coda = [(x, 0) for x in range(w)] + [(x, y) for y in range(h) for x in (0, w - 1)]
     visti = set()
     while coda:
         x, y = coda.pop()
         if (x, y) in visti or not (0 <= x < w and 0 <= y < h) or not scuro(x, y):
             continue
         visti.add((x, y))
-        px[x, y] = (0, 0, 0, 0)
+        px[x, y] = colore
         coda += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
     return img
 
