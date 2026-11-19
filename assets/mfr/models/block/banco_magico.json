@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "mfr:block/banco_fronte",
+    "north": "mfr:block/banco_fronte",
+    "south": "mfr:block/banco_retro",
+    "east": "mfr:block/banco_lato_destro",
+    "west": "mfr:block/banco_lato_sinistro",
+    "up": "mfr:block/banco_sopra",
+    "down": "mfr:block/banco_sotto"
+  }
+}
