@@ -3,12 +3,12 @@
 
 Uso: python3 genera_schermata.py   (poi python3 costruisci.py)
 
-La schermata è una finestra tipo baule da 6 righe (176 x 222 pixel di interfaccia), disegnata a 4x (704 x 888)
-per restare nitida con la scala dell'interfaccia 2-4. Il saldo è scritto con le cifre del font mfr:saldo.
+La schermata è una finestra tipo baule da 5 righe (176 x 204 pixel di interfaccia) con l'arco del disegno che
+sporge di 33 pixel sopra la finestra; tutto è disegnato a 4x (704 x 948) per restare nitido con la scala 2-4. Il saldo è scritto con le cifre del font mfr:saldo.
 
 Il client mette i caratteri dei font in pagine da 256 x 256 pixel (FontTexture.SIZE nel client 26.3): un
 carattere più grande non entra e al suo posto compare il quadratino del carattere mancante. Per questo lo
-sfondo è diviso in 4 x 4 tasselli da 176 x 224 pixel (44 x 56 di interfaccia), i caratteri da \uE020 a \uE02F
+sfondo è diviso in 4 x 4 tasselli da 176 x 240 pixel (44 x 60 di interfaccia), i caratteri da \uE020 a \uE02F
 (riga r, colonna c -> \uE020 + 4r + c); il plugin li compone riga per riga (BancoMagico.titolo()).
 Lo script scrive anche assets/mfr/font/banco.json (un provider per riga di tasselli, ognuno con il suo ascent).
 Stampa le larghezze delle cifre da copiare in BancoMagico.java (LARGHEZZE_SALDO).
@@ -19,7 +19,8 @@ import os
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 S = 4                       # pixel di texture per pixel di interfaccia
-W, H = 176, 222             # finestra tipo baule da 6 righe
+W, H = 176, 204             # finestra tipo baule da 5 righe
+SOPRA = 33                  # l'arco del disegno sporge sopra la finestra (lì gli angoli sono trasparenti)
 QUI = os.path.dirname(os.path.abspath(__file__))
 SORGENTE = os.path.join(QUI, "sorgenti", "banco-schermata.png")
 FONT_TTF = "/usr/share/fonts/truetype/dejavu/DejaVuSerifCondensed-Bold.ttf"
@@ -57,6 +58,9 @@ def casella(d, x, y, ricca=False):
 
 
 def sfondo():
+    """Sfondo alto SOPRA + H pixel di interfaccia: l'arco sopra la finestra, poi la finestra da 5 righe.
+    Sopra la finestra il nero intorno all'arco diventa trasparente (si vede il mondo sfocato); dentro la finestra
+    tutto è coperto, perché dietro c'è la finestra grigia del baule."""
     ref = Image.open(SORGENTE).convert("RGB")
     k = 704 / ref.width                               # stessa scala del disegno in orizzontale
     # Targa del saldo: si cancella la scritta d'esempio (il saldo vero lo scrive il plugin).
@@ -64,41 +68,47 @@ def sfondo():
     striscia = ref.crop((318, 455, 334, 527))         # tratto pulito fra monetine e scritta
     for x in range(236, 888, striscia.width):         # via anche le monetine: più spazio per il saldo
         ref.paste(striscia, (x, 455))
-    # Parte alta del disegno: stemma, BANCO MAGICO, DEL FIDORO, targa del saldo (fino a y = 88 di interfaccia).
+    # Parte alta del disegno: arco, stemma, BANCO MAGICO, DEL FIDORO, targa del saldo (88 pixel di interfaccia).
     alto_ref = int(88 * S / k)
     alto = ref.crop((0, 0, ref.width, alto_ref)).resize((W * S, 88 * S), Image.LANCZOS)
-    # Nero intorno all'arco: dietro c'è la finestra grigia del baule, quindi niente trasparenza, ma il viola scuro.
-    alto = trasparente_fuori(alto.convert("RGBA"), colore=VIOLA_SCURO + (255,)).convert("RGB")
+    alto = trasparente_fuori(alto.convert("RGBA"))
+    fine_stemma = 88 - SOPRA                          # y della finestra dove finisce la parte alta (55)
 
-    img = Image.new("RGB", (W * S, H * S), VIOLA)
+    img = Image.new("RGBA", (W * S, (SOPRA + H) * S), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    # Corpo: viola scuro con una trama leggera, cornice d'oro sottile ai lati e in fondo.
-    for y in range(88 * S, H * S, 2):
-        d.line([(0, y), (W * S, y)], fill=VIOLA_SCURO if (y // 2) % 3 == 0 else VIOLA)
-    img.paste(alto, (0, 0))
-    cornice(d, 0, 87, W, H, spessore=2)
+    o = lambda x0, y0, x1, y1: r(x0, y0 + SOPRA, x1, y1 + SOPRA)   # coordinate della finestra -> immagine
+    # Corpo della finestra (tutta, anche dietro lo stemma): viola scuro con una trama leggera.
+    d.rectangle([0, SOPRA * S, W * S - 1, (SOPRA + H) * S - 1], fill=VIOLA + (255,))
+    for y in range(SOPRA * S, (SOPRA + H) * S, 2):
+        d.line([(0, y), (W * S, y)], fill=(VIOLA_SCURO if (y // 2) % 3 == 0 else VIOLA) + (255,))
+    img.alpha_composite(alto, (0, 0))
+    d = ImageDraw.Draw(img)
+    cornice_o(d, 0, fine_stemma - 1, W, H, spessore=2)
     # Trave d'oro sotto la targa, che chiude le colonne del disegno.
-    d.rectangle(r(0, 86, W, 88), fill=ORO)
-    d.rectangle(r(0, 86, W, 87), fill=ORO_CHIARO)
-    d.rectangle([0, 88 * S - S // 2, W * S - 1, 88 * S - 1], fill=ORO_SCURO)
-
-    # Riga dei pulsanti (riga 4 della finestra): 1 5 10 20 | importo | 50 100 200 500.
-    for c in range(9):
-        casella(d, 8 + c * 18, 90, ricca=True)
-    # Bilancia con gli allori del disegno, sotto i pulsanti.
+    d.rectangle(o(0, fine_stemma - 2, W, fine_stemma), fill=ORO)
+    d.rectangle(o(0, fine_stemma - 2, W, fine_stemma - 1), fill=ORO_CHIARO)
+    d.rectangle([0, (SOPRA + fine_stemma) * S - S // 2, W * S - 1, (SOPRA + fine_stemma) * S - 1], fill=ORO_SCURO)
+    # Bilancia con gli allori del disegno, fra la trave e i pulsanti.
     bil = ref.crop((205, 1088, 917, 1262))
     bh = 16 * S
     bil = bil.resize((int(bil.width * bh / bil.height), bh), Image.LANCZOS)
-    img.paste(bil, ((W * S - bil.width) // 2, 109 * S))
-    # Targhetta chiara dietro la scritta "Inventario" del gioco (grigia, illeggibile sul viola).
-    cornice(d, 5, 126, 66, 138, spessore=1, fondo=(214, 190, 140))
-    # Inventario del giocatore: 3 righe + barra rapida (finestra da 6 righe: y = 139 e 197).
+    img.paste(bil, ((W * S - bil.width) // 2, (SOPRA + 64) * S))
+    # Riga dei pulsanti (riga 4 della finestra, caselle 36-44): 1 5 10 20 | importo | 50 100 200 500.
+    for c in range(9):
+        casella(d, 8 + c * 18, SOPRA + 90, ricca=True)
+    # Targhetta chiara dietro la scritta "Inventario" del gioco (grigia, illeggibile sul viola): y = H - 94.
+    cornice_o(d, 5, H - 96, 66, H - 84, spessore=1, fondo=(214, 190, 140))
+    # Inventario del giocatore: 3 righe + barra rapida (finestra da 5 righe: y = 121 e 179).
     for rr in range(3):
         for c in range(9):
-            casella(d, 8 + c * 18, 140 + rr * 18 - 1)
+            casella(d, 8 + c * 18, SOPRA + 121 + rr * 18)
     for c in range(9):
-        casella(d, 8 + c * 18, 197)
+        casella(d, 8 + c * 18, SOPRA + 179)
     return img
+
+
+def cornice_o(d, x0, y0, x1, y1, **k):
+    cornice(d, x0, y0 + SOPRA, x1, y1 + SOPRA, **k)
 
 
 def cifre():
@@ -129,9 +139,10 @@ def cifre():
 
 
 RIGHE, COLONNE = 4, 4
-TASSELLO_W, TASSELLO_H = W * S // COLONNE, 224          # 176 x 224 pixel di texture, <= 256
+TASSELLO_W, TASSELLO_H = W * S // COLONNE, 240          # 176 x 240 pixel di texture, <= 256
 PRIMO_TASSELLO = 0xE020
-ASCENT_FINESTRA = 13                                    # con il titolo a y = 6, ascent 13 = bordo alto della finestra
+ASCENT_FINESTRA = 13 + SOPRA                            # titolo a y = 6: ascent 13 = bordo alto, + SOPRA per l'arco
+SALDO_ASCENT = -59 + 33                                 # cifre del saldo nella targa (alla y della finestra 39..47)
 
 
 def spostamenti():
@@ -217,8 +228,8 @@ def main():
     tex = os.path.join(QUI, "assets", "mfr", "textures", "font")
     os.makedirs(tex, exist_ok=True)
     # I font del client accettano solo immagini RGBA: in RGB il carattere non si carica.
-    tela = Image.new("RGBA", (COLONNE * TASSELLO_W, RIGHE * TASSELLO_H), (0, 0, 0, 0))   # 704 x 896
-    tela.paste(sfondo().convert("RGBA"), (0, 0))        # gli ultimi 8 pixel in fondo restano trasparenti
+    tela = Image.new("RGBA", (COLONNE * TASSELLO_W, RIGHE * TASSELLO_H), (0, 0, 0, 0))   # 704 x 960
+    tela.paste(sfondo(), (0, 0))                        # in fondo restano 12 pixel trasparenti
     tela.save(os.path.join(tex, "banco_schermata.png"), optimize=True)
     with open(os.path.join(QUI, "assets", "mfr", "font", "banco.json"), "w", encoding="utf-8") as f:
         json.dump(font_banco(), f, indent=2)
@@ -226,6 +237,11 @@ def main():
     stemma().save(os.path.join(tex, "banco_stemma.png"), optimize=True)
     with open(os.path.join(QUI, "assets", "mfr", "font", "finestra.json"), "w", encoding="utf-8") as f:
         json.dump(font_finestra(), f, indent=2)
+        f.write("\n")
+    with open(os.path.join(QUI, "assets", "mfr", "font", "saldo.json"), "w", encoding="utf-8") as f:
+        json.dump({"providers": [{"type": "space", "advances": {" ": 3}},
+                                 {"type": "bitmap", "file": "mfr:font/banco_saldo.png", "height": 8,
+                                  "ascent": SALDO_ASCENT, "chars": [CIFRE]}]}, f, indent=2)
         f.write("\n")
     img, larghezze, cella_h = cifre()
     img.save(os.path.join(tex, "banco_saldo.png"), optimize=True)

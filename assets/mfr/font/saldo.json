@@ -10,7 +10,7 @@
       "type": "bitmap",
       "file": "mfr:font/banco_saldo.png",
       "height": 8,
-      "ascent": -59,
+      "ascent": -26,
       "chars": [
         "0123456789.:SALDOF"
       ]
