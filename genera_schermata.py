@@ -156,6 +156,42 @@ def font_banco():
     return {"providers": providers}
 
 
+# --- finestra "Importo a scelta" (finestra di dialogo del gioco) ---
+# Nel corpo della finestra il plugin scrive una riga con il font mfr:finestra: la parte alta del disegno (stemma,
+# BANCO MAGICO, DEL FIDORO, targa) in 2 x 4 tasselli da 176 x 176 (\uE030..\uE037) e il saldo vero nella targa.
+STEMMA_RIGHE, STEMMA_ALTO = 2, 176                      # 704 x 352 pixel di texture = 176 x 88 di interfaccia
+PRIMO_STEMMA = 0xE030
+ASCENT_RIGA = 7                                         # ascent 7 = cima della riga di testo
+SALDO_FINESTRA_ASCENT = -66                             # cifre (alte 8) centrate nella targa, a y = 73..81
+
+
+def stemma():
+    ref = Image.open(SORGENTE).convert("RGB").copy()
+    striscia = ref.crop((318, 455, 334, 527))           # come in sfondo(): via la scritta d'esempio e le monetine
+    for x in range(236, 888, striscia.width):
+        ref.paste(striscia, (x, 455))
+    alto_ref = round(STEMMA_RIGHE * STEMMA_ALTO * ref.width / (W * S))
+    return ref.crop((0, 0, ref.width, alto_ref)).resize((W * S, STEMMA_RIGHE * STEMMA_ALTO), Image.LANCZOS)
+
+
+def font_finestra():
+    providers = [spostamenti()]
+    providers[0]["advances"][" "] = 3
+    alto = STEMMA_ALTO // S                             # 44 pixel di interfaccia per riga
+    for riga in range(STEMMA_RIGHE):
+        griglia = []
+        for rr in range(STEMMA_RIGHE):
+            if rr == riga:
+                griglia.append("".join(chr(PRIMO_STEMMA + riga * COLONNE + c) for c in range(COLONNE)))
+            else:
+                griglia.append("\u0000" * COLONNE)
+        providers.append({"type": "bitmap", "file": "mfr:font/banco_stemma.png", "height": alto,
+                          "ascent": ASCENT_RIGA - riga * alto, "chars": griglia})
+    providers.append({"type": "bitmap", "file": "mfr:font/banco_saldo.png", "height": 8,
+                      "ascent": SALDO_FINESTRA_ASCENT, "chars": [CIFRE]})
+    return {"providers": providers}
+
+
 def main():
     tex = os.path.join(QUI, "assets", "mfr", "textures", "font")
     os.makedirs(tex, exist_ok=True)
@@ -165,6 +201,10 @@ def main():
     tela.save(os.path.join(tex, "banco_schermata.png"), optimize=True)
     with open(os.path.join(QUI, "assets", "mfr", "font", "banco.json"), "w", encoding="utf-8") as f:
         json.dump(font_banco(), f, indent=2)
+        f.write("\n")
+    stemma().convert("RGBA").save(os.path.join(tex, "banco_stemma.png"), optimize=True)
+    with open(os.path.join(QUI, "assets", "mfr", "font", "finestra.json"), "w", encoding="utf-8") as f:
+        json.dump(font_finestra(), f, indent=2)
         f.write("\n")
     img, larghezze, cella_h = cifre()
     img.save(os.path.join(tex, "banco_saldo.png"), optimize=True)
