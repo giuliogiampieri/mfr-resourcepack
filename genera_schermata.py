@@ -171,7 +171,26 @@ def stemma():
     for x in range(236, 888, striscia.width):
         ref.paste(striscia, (x, 455))
     alto_ref = round(STEMMA_RIGHE * STEMMA_ALTO * ref.width / (W * S))
-    return ref.crop((0, 0, ref.width, alto_ref)).resize((W * S, STEMMA_RIGHE * STEMMA_ALTO), Image.LANCZOS)
+    img = ref.crop((0, 0, ref.width, alto_ref)).resize((W * S, STEMMA_RIGHE * STEMMA_ALTO), Image.LANCZOS)
+    return trasparente_fuori(img.convert("RGBA"))
+
+
+def trasparente_fuori(img, soglia=40):
+    """Il nero intorno al disegno (angoli sopra l'arco) diventa trasparente: si parte dai bordi dell'immagine e si
+    allarga a tutti i pixel quasi neri collegati. Il nero dentro il disegno resta."""
+    w, h = img.size
+    px = img.load()
+    scuro = lambda x, y: sum(px[x, y][:3]) < soglia
+    coda = [(x, y) for x in range(w) for y in (0, h - 1)] + [(x, y) for y in range(h) for x in (0, w - 1)]
+    visti = set()
+    while coda:
+        x, y = coda.pop()
+        if (x, y) in visti or not (0 <= x < w and 0 <= y < h) or not scuro(x, y):
+            continue
+        visti.add((x, y))
+        px[x, y] = (0, 0, 0, 0)
+        coda += [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+    return img
 
 
 def font_finestra():
@@ -202,7 +221,7 @@ def main():
     with open(os.path.join(QUI, "assets", "mfr", "font", "banco.json"), "w", encoding="utf-8") as f:
         json.dump(font_banco(), f, indent=2)
         f.write("\n")
-    stemma().convert("RGBA").save(os.path.join(tex, "banco_stemma.png"), optimize=True)
+    stemma().save(os.path.join(tex, "banco_stemma.png"), optimize=True)
     with open(os.path.join(QUI, "assets", "mfr", "font", "finestra.json"), "w", encoding="utf-8") as f:
         json.dump(font_finestra(), f, indent=2)
         f.write("\n")
