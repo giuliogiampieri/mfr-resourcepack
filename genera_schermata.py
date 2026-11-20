@@ -266,9 +266,9 @@ def incudine():
     d.rectangle(r(BUCO[0], O + BUCO[1], BUCO[2], O + BUCO[3]), fill=(0, 0, 0, 0))
     # Riga delle caselle: moneta (casella 0), RITIRA -> risultato (casella 2). La casella 1 resta senza cornice.
     casella(d, 27, O + 47)
-    scritta(img, "RITIRA", 108, O + 52, alto=7)
+    scritta(img, "RITIRA", 100, O + 50, alto=7)
     d = ImageDraw.Draw(img)
-    d.polygon([(124 * S, (O + 51) * S), (130 * S, (O + 55) * S), (124 * S, (O + 59) * S)], fill=ORO)
+    d.polygon([(123 * S, (O + 51) * S), (129 * S, (O + 55) * S), (123 * S, (O + 59) * S)], fill=ORO)
     cornice(d, 131, O + 44, 153, O + 66, spessore=1)
     casella(d, 134, O + 47, ricca=True)
     # Targhetta per la scritta "Inventario" (y = 72) e inventario del giocatore (y = 84 e 142).
