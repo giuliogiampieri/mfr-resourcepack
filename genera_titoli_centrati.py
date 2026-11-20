@@ -11,7 +11,8 @@ assets/minecraft/font/default.json (solo gli spazi: il gioco unisce i font dei p
 
 Esclusi di proposito: schermate già centrate dal gioco (fornaci, distributore, crafter, alambicco, villico),
 banco da lavoro (la stessa voce "container.crafting" è usata anche nell'inventario del personaggio a x = 97),
-incudine (titolo accanto al martello) e forgia (titolo a y = 15). Limiti: i contenitori con un nome personalizzato
+incudine (titolo accanto al martello), forgia (titolo a y = 15), tavolo da incantesimi e telaio (a destra del
+titolo ci sono pulsanti e motivi: un titolo centrato ci finirebbe sopra). Limiti: i contenitori con un nome personalizzato
 e i giocatori con altre lingue vedono il titolo a sinistra; dove il gioco usa il nome predefinito dentro un
 messaggio (per esempio "Baule è chiuso a chiave") compare lo spazio iniziale.
 """
@@ -27,8 +28,8 @@ LARGHEZZA_FINESTRA = 176
 # voce -> x a cui il gioco scrive il titolo (codice del client 26.3)
 TITOLI = {
     "container.chest": 8, "container.chestDouble": 8, "container.enderchest": 8, "container.barrel": 8,
-    "container.hopper": 8, "container.shulkerBox": 8, "container.grindstone_title": 8, "container.loom": 8,
-    "container.cartography_table": 8, "container.stonecutter": 8, "container.enchant": 8,
+    "container.hopper": 8, "container.shulkerBox": 8, "container.grindstone_title": 8,
+    "container.cartography_table": 8, "container.stonecutter": 8,
     "container.inventory": 8,           # "Inventario": x = 8 (villico: 107, area larga uguale)
 }
 
