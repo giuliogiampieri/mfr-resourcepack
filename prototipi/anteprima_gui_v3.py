@@ -19,6 +19,13 @@ spec.loader.exec_module(a2)
 CONT, SPR = a2.CONT, a2.SPR
 
 
+def x_titolo(f, glifi, testo, x0, w=176):
+    """Con i titoli centrati del pacchetto (variante con lingua ridefinita) il testo va a (176 - larghezza) / 2."""
+    if getattr(f, "centra", False):
+        return (w - (a2.larghezza(glifi, testo) + 1)) // 2
+    return x0
+
+
 def sfondo_finestra(f, nome, w, h):
     tex = f(CONT + nome)
     k = tex.width // 256
@@ -48,7 +55,8 @@ def fornace(f, jar, glifi, titolo="Fornace"):
     oggetti(tela, jar, {(56, 17): "raw_iron", (56, 53): "coal", (116, 35): "iron_ingot", (8, 142): "bread",
                         (26, 142): "stick", (44, 142): "iron_sword", (8, 84): "arrow", (62, 84): "apple"})
     a2.blit(tela, f(SPR + "container/slot_highlight_front.png"), 58, 80, 24, 24)
-    etichette(tela, glifi, [(titolo, (176 - a2.larghezza(glifi, titolo)) // 2, 6), ("Inventario", 8, 72)], 176, 166)
+    etichette(tela, glifi, [(titolo, (176 - a2.larghezza(glifi, titolo)) // 2, 6),
+                            ("Inventario", x_titolo(f, glifi, "Inventario", 8), 72)], 176, 166)
     return tela
 
 
@@ -56,7 +64,8 @@ def tramoggia(f, jar, glifi):
     tela = Image.new("RGBA", (176 * 4, 133 * 4))
     tela.alpha_composite(sfondo_finestra(f, "hopper.png", 176, 133))
     oggetti(tela, jar, {(44, 20): "iron_ingot", (62, 20): "gold_nugget", (8, 109): "bread", (26, 109): "coal"})
-    etichette(tela, glifi, [("Tramoggia", 8, 6), ("Inventario", 8, 39)], 176, 133)
+    etichette(tela, glifi, [("Tramoggia", x_titolo(f, glifi, "Tramoggia", 8), 6),
+                            ("Inventario", x_titolo(f, glifi, "Inventario", 8), 39)], 176, 133)
     return tela
 
 
@@ -68,7 +77,8 @@ def baule(f, jar, glifi):
     tela.alpha_composite(tex.crop((0, 0, 176 * k, 71 * k)).resize((704, 284), Image.NEAREST), (0, 0))
     tela.alpha_composite(tex.crop((0, 126 * k, 176 * k, 222 * k)).resize((704, 384), Image.NEAREST), (0, 284))
     oggetti(tela, jar, {(8, 18): "apple", (26, 18): "bread", (8, 36): "iron_ingot", (8, 143): "stick"})
-    etichette(tela, glifi, [("Baule", 8, 6), ("Inventario", 8, 73)], 176, 167)
+    etichette(tela, glifi, [("Baule", x_titolo(f, glifi, "Baule", 8), 6),
+                            ("Inventario", x_titolo(f, glifi, "Inventario", 8), 73)], 176, 167)
     return tela
 
 
@@ -77,7 +87,8 @@ def banco(f, jar, glifi):
     tela.alpha_composite(sfondo_finestra(f, "crafting_table.png", 176, 166))
     oggetti(tela, jar, {(30, 17): "stick", (48, 17): "stick", (30, 35): "iron_ingot", (124, 35): "iron_pickaxe",
                         (8, 142): "bread"})
-    etichette(tela, glifi, [("Fabbricazione", 29, 6), ("Inventario", 8, 72)], 176, 166)
+    etichette(tela, glifi, [("Fabbricazione", 29, 6), ("Inventario", x_titolo(f, glifi, "Inventario", 8), 72)],
+              176, 166)
     return tela
 
 
@@ -109,6 +120,8 @@ def main():
     glifi = a2.font_gioco(jar)
     varianti = sys.argv[3].split(",") if len(sys.argv) > 3 else ["A", "B"]
     fonti = [a2.Fonti(jar, QUI)] + [a2.Fonti(jar, os.path.join(QUI, "prototipi", f"gui-v3-{v}")) for v in varianti]
+    for f, v in zip(fonti[1:], varianti):
+        f.centra = os.path.exists(os.path.join(QUI, "prototipi", f"gui-v3-{v}", "assets", "minecraft", "lang", "it_it.json"))
     nomi = {"A": "A  Cartiglio", "B": "B  Architrave", "B2": "B2  Fascia sottile"}
     for nome, fn in (("fornace", fornace), ("tramoggia", tramoggia), ("baule", baule), ("banco", banco),
                      ("creativa", creativa)):
