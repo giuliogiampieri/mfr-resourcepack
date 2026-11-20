@@ -1,0 +1,12 @@
+{
+  "container.chest": "\uf827\uf822Chest",
+  "container.chestDouble": "\uf826\uf825\uf821Large Chest",
+  "container.enderchest": "\uf826\uf825\uf821Ender Chest",
+  "container.barrel": "\uf826\uf825\uf824\uf823\uf822\uf821Barrel",
+  "container.hopper": "\uf826\uf825\uf822Item Hopper",
+  "container.shulkerBox": "\uf826\uf825\uf822Shulker Box",
+  "container.grindstone_title": "\uf825\uf824\uf823\uf822Repair & Disenchant",
+  "container.cartography_table": "\uf826Cartography Table",
+  "container.stonecutter": "\uf826\uf825\uf822Stonecutter",
+  "container.inventory": "\uf826\uf825\uf823\uf822\uf821Inventory"
+}
