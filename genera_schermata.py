@@ -34,6 +34,46 @@ VIOLA_SCURO = (28, 8, 20)
 CASELLA = (30, 12, 22)
 
 
+# ---- Variante B2 (approvata il 20/11/2026): corpo della finestra come le altre interfacce del pacchetto.
+import numpy as np                                                    # noqa: E402
+import genera_gui_v2 as v2                                            # noqa: E402
+import genera_gui_v3 as v3                                            # noqa: E402
+
+
+def corpo_b2(img, y0, w, h):
+    """Pietra intarsiata, cornice a doppio filo, ombra interna e rivetti (come genera_gui_v3, variante B2) nella
+    finestra larga w e alta h che comincia a y0 (pixel di interfaccia) dell'immagine."""
+    pietra = v3.pietra_intarsiata(w, h)
+    a = np.array(img)
+    Y0 = y0 * S
+    a[Y0:Y0 + h * S, :w * S, :3] = pietra
+    a[Y0:Y0 + h * S, :w * S, 3] = 255
+    W4, H4 = w * S, h * S
+    yy, xx = np.mgrid[0:H4, 0:W4]
+    dist = np.minimum.reduce([xx, yy, W4 - 1 - xx, H4 - 1 - yy])
+    alto_sx = (yy + xx) < (H4 + W4) / 2
+    reg = a[Y0:Y0 + H4, :W4]
+    def col(m, c):
+        reg[m, :3] = c
+    col(dist <= 1, v2.OSSIDIANA)
+    col((dist >= 2) & (dist <= 3), v2.ORO_CHIARO)
+    col((dist >= 4) & (dist <= 5), v2.OSSIDIANA)
+    col((dist >= 6) & (dist <= 10), v2.ORO)
+    col((dist >= 6) & (dist <= 7) & alto_sx, v2.ORO_CHIARO)
+    col((dist >= 9) & (dist <= 10) & ~alto_sx, v2.ORO_SCURO)
+    for d0, t in ((11, .45), (13, .30), (15, .16), (17, .08)):
+        m = (dist >= d0) & (dist <= d0 + 1)
+        reg[m, :3] = (reg[m, :3] * (1 - t) + np.array(v2.OSSIDIANA) * t).astype(np.uint8)
+    img.paste(Image.fromarray(a, "RGBA"))
+    d = ImageDraw.Draw(img)
+    for x in (1, w - 3):
+        v3.rivetto(d, x, y0 + h - 3)
+
+
+def casella_b2(d, x, y, ricca=False):
+    v2.casella(d, x, y, x + 16, y + 16, importante=ricca)
+
+
 def r(x0, y0, x1, y1):
     """Rettangolo in pixel di interfaccia -> texture (estremi inclusi in interfaccia, esclusi in texture)."""
     return [x0 * S, y0 * S, x1 * S - 1, y1 * S - 1]
@@ -78,12 +118,9 @@ def sfondo():
     d = ImageDraw.Draw(img)
     o = lambda x0, y0, x1, y1: r(x0, y0 + SOPRA, x1, y1 + SOPRA)   # coordinate della finestra -> immagine
     # Corpo della finestra (tutta, anche dietro lo stemma): viola scuro con una trama leggera.
-    d.rectangle([0, SOPRA * S, W * S - 1, (SOPRA + H) * S - 1], fill=VIOLA + (255,))
-    for y in range(SOPRA * S, (SOPRA + H) * S, 2):
-        d.line([(0, y), (W * S, y)], fill=(VIOLA_SCURO if (y // 2) % 3 == 0 else VIOLA) + (255,))
+    corpo_b2(img, SOPRA + fine_stemma - 1, W, H - fine_stemma + 1)
     img.alpha_composite(alto, (0, 0))
     d = ImageDraw.Draw(img)
-    cornice_o(d, 0, fine_stemma - 1, W, H, spessore=2)
     # Trave d'oro sotto la targa, che chiude le colonne del disegno.
     d.rectangle(o(0, fine_stemma - 2, W, fine_stemma), fill=ORO)
     d.rectangle(o(0, fine_stemma - 2, W, fine_stemma - 1), fill=ORO_CHIARO)
@@ -95,15 +132,15 @@ def sfondo():
     img.paste(bil, ((W * S - bil.width) // 2, (SOPRA + 64) * S))
     # Riga dei pulsanti (riga 4 della finestra, caselle 36-44): 1 5 10 20 | importo | 50 100 200 500.
     for c in range(9):
-        casella(d, 8 + c * 18, SOPRA + 90, ricca=True)
-    # Targhetta chiara dietro la scritta "Inventario" del gioco (grigia, illeggibile sul viola): y = H - 94.
-    cornice_o(d, 5, H - 96, 66, H - 84, spessore=1, fondo=(214, 190, 140))
+        casella_b2(d, 8 + c * 18, SOPRA + 90, ricca=True)
+    # Fascia B2 a tutta larghezza dietro la scritta "Inventario" del gioco (y = H - 94, centrata dalla lingua).
+    v3.fascia(d, 3, W - 3, SOPRA + H - 94)
     # Inventario del giocatore: 3 righe + barra rapida (finestra da 5 righe: y = 121 e 179).
     for rr in range(3):
         for c in range(9):
-            casella(d, 8 + c * 18, SOPRA + 121 + rr * 18)
+            casella_b2(d, 8 + c * 18, SOPRA + 121 + rr * 18)
     for c in range(9):
-        casella(d, 8 + c * 18, SOPRA + 179)
+        casella_b2(d, 8 + c * 18, SOPRA + 179)
     return img
 
 
@@ -251,10 +288,8 @@ def incudine():
     d = ImageDraw.Draw(img)
     O = INC_SOPRA
     # Corpo della finestra.
-    d.rectangle([0, O * S, INC_W * S - 1, (O + INC_H) * S - 1], fill=VIOLA + (255,))
-    for y in range(O * S, (O + INC_H) * S, 2):
-        d.line([(0, y), (INC_W * S, y)], fill=(VIOLA_SCURO if (y // 2) % 3 == 0 else VIOLA) + (255,))
-    cornice(d, 0, O, INC_W, O + INC_H, spessore=2)
+    corpo_b2(img, O, INC_W, INC_H)
+    d = ImageDraw.Draw(img)
     # Targa del saldo in alto nella finestra (il saldo lo scrive il plugin).
     targa = alto.crop((29 * S, 66 * S, 147 * S, 88 * S))
     targa = targa.resize((round(targa.width * 18 / 22), 18 * S), Image.LANCZOS)
@@ -265,19 +300,19 @@ def incudine():
     cornice(d, BUCO[0] - 2, O + BUCO[1] - 2, BUCO[2] + 2, O + BUCO[3] + 2, spessore=1, fondo=(10, 3, 8))
     d.rectangle(r(BUCO[0], O + BUCO[1], BUCO[2], O + BUCO[3]), fill=(0, 0, 0, 0))
     # Riga delle caselle: moneta (casella 0), RITIRA -> risultato (casella 2). La casella 1 resta senza cornice.
-    casella(d, 27, O + 47)
+    casella_b2(d, 27, O + 47)
     scritta(img, "RITIRA", 100, O + 50, alto=7)
     d = ImageDraw.Draw(img)
     d.polygon([(123 * S, (O + 51) * S), (129 * S, (O + 55) * S), (123 * S, (O + 59) * S)], fill=ORO)
     cornice(d, 131, O + 44, 153, O + 66, spessore=1)
-    casella(d, 134, O + 47, ricca=True)
-    # Targhetta per la scritta "Inventario" (y = 72) e inventario del giocatore (y = 84 e 142).
-    cornice(d, 5, O + 70, 66, O + 82, spessore=1, fondo=(214, 190, 140))
+    casella_b2(d, 134, O + 47, ricca=True)
+    # Fascia B2 per la scritta "Inventario" (y = 72) e inventario del giocatore (y = 84 e 142).
+    v3.fascia(d, 3, INC_W - 3, O + 72)
     for rr in range(3):
         for c in range(9):
-            casella(d, 8 + c * 18, O + 84 + rr * 18)
+            casella_b2(d, 8 + c * 18, O + 84 + rr * 18)
     for c in range(9):
-        casella(d, 8 + c * 18, O + 142)
+        casella_b2(d, 8 + c * 18, O + 142)
     return img
 
 
