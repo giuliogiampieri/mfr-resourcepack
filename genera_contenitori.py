@@ -4,6 +4,8 @@ le scritte.
 
 Uso: python3 genera_contenitori.py <jar del client Minecraft 26.3>   (poi python3 costruisci.py)
 
+Oltre ai contenitori: schede della modalità creativa ricolorate e pulsante del libro delle ricette invisibile.
+
 Le texture originali stanno nel jar del client (non nel repository): lo script le legge da lì e scrive le versioni
 ricolorate in assets/minecraft/textures/gui/container/. Le texture del gioco usano solo 6 grigi, che diventano i
 colori del banco. Le scritte dei contenitori ("Inventario", "Baule", "Fornace"...) il gioco le disegna sempre in
@@ -59,7 +61,18 @@ TARGHETTE = {
     "nautilus.png": [(7, 4, 169, 15), (7, 71, 169, 81)],
     "villager.png": [(4, 4, 272, 15), (105, 70, 272, 81)],
     "beacon.png": [],
+    # Inventario della modalità creativa (staff): titolo della scheda a (8, 6), casella di ricerca da x = 80.
+    "creative_inventory/tab_inventory.png": [],
+    "creative_inventory/tab_items.png": [(7, 4, 190, 16)],
+    "creative_inventory/tab_item_search.png": [(7, 4, 79, 16)],
 }
+
+# Altre immagini dell'interfaccia (cartella sprites) ricolorate senza targhette: schede e barra della creativa.
+SPRITE_DIR = "assets/minecraft/textures/gui/sprites/"
+SPRITE_PREFISSI = ("container/creative_inventory/",)
+# Pulsante del libro delle ricette (fornaci, banco da lavoro, inventario): reso invisibile su richiesta del
+# proprietario. Il gioco lo tiene comunque nello stesso posto: cliccando lì il libro si apre ancora.
+INVISIBILI = ("recipe_book/button.png", "recipe_book/button_highlighted.png")
 
 
 def ricolora(img):
@@ -81,7 +94,6 @@ def targhetta(d, x0, y0, x1, y1):
 def main():
     if len(sys.argv) != 2:
         sys.exit(__doc__)
-    os.makedirs(USCITA, exist_ok=True)
     problemi = []
     with zipfile.ZipFile(sys.argv[1]) as jar:
         for nome, rettangoli in TARGHETTE.items():
@@ -94,11 +106,26 @@ def main():
             d = ImageDraw.Draw(img)
             for rett in rettangoli:
                 targhetta(d, *rett)
-            img.save(os.path.join(USCITA, nome), optimize=True)
-            print("scritto", nome)
+            scrivi(img, os.path.join(USCITA, nome))
+        for voce in sorted(jar.namelist()):
+            rel = voce[len(SPRITE_DIR):] if voce.startswith(SPRITE_DIR) else None
+            if rel is None or not voce.endswith(".png"):
+                continue
+            uscita = os.path.join(QUI, voce)
+            if rel.startswith(SPRITE_PREFISSI):
+                scrivi(ricolora(Image.open(io.BytesIO(jar.read(voce)))), uscita)
+            elif rel in INVISIBILI:
+                dim = Image.open(io.BytesIO(jar.read(voce))).size
+                scrivi(Image.new("RGBA", dim, (0, 0, 0, 0)), uscita)
     if problemi:
         print("TARGHETTE SU CASELLE O DISEGNI:\n  " + "\n  ".join(problemi))
         sys.exit(1)
+
+
+def scrivi(img, percorso):
+    os.makedirs(os.path.dirname(percorso), exist_ok=True)
+    img.save(percorso, optimize=True)
+    print("scritto", os.path.relpath(percorso, QUI))
 
 
 if __name__ == "__main__":
