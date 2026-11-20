@@ -1,0 +1,12 @@
+{
+  "container.chest": "\uf827\uf822Baule",
+  "container.chestDouble": "\uf826\uf824\uf823\uf822Baule grande",
+  "container.enderchest": "\uf826\uf824\uf822\uf821Baule di ender",
+  "container.barrel": "\uf827\uf821Barile",
+  "container.hopper": "\uf826\uf825\uf823\uf822\uf821Tramoggia",
+  "container.shulkerBox": "\uf826\uf822Scatola di shulker",
+  "container.grindstone_title": "\uf826Ripara e disincanta",
+  "container.cartography_table": "\uf826\uf825\uf822Cartografia",
+  "container.stonecutter": "\uf826\uf825\uf822Tagliapietre",
+  "container.inventory": "\uf826\uf825\uf823\uf822Inventario"
+}
