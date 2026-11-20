@@ -74,6 +74,33 @@ SPRITE_PREFISSI = ("container/creative_inventory/",)
 # Pulsante del libro delle ricette (fornaci, banco da lavoro, inventario): reso invisibile su richiesta del
 # proprietario. Il gioco lo tiene comunque nello stesso posto: cliccando lì il libro si apre ancora.
 INVISIBILI = ("recipe_book/button.png", "recipe_book/button_highlighted.png")
+# Immagini disegnate SOPRA lo sfondo dei contenitori (fiamma e freccia delle fornaci, alambicco, villico, errori):
+# il loro grigio di fondo (198) diventa trasparente, altrimenti si vede un riquadro grigio sul viola; gli altri
+# grigi passano ai colori del banco. Cursori delle barre di scorrimento e casella disattivata del crafter: ricolorati.
+SOVRAPPOSTE = tuple(f"container/{n}" for n in (
+    "furnace/burn_progress.png", "furnace/lit_progress.png", "blast_furnace/burn_progress.png",
+    "blast_furnace/lit_progress.png", "smoker/burn_progress.png", "smoker/lit_progress.png",
+    "brewing_stand/brew_progress.png", "brewing_stand/bubbles.png", "anvil/error.png", "cartography_table/error.png",
+    "grindstone/error.png", "smithing/error.png", "villager/out_of_stock.png", "villager/trade_arrow.png",
+    "villager/trade_arrow_out_of_stock.png"))
+RICOLORATE = tuple(f"container/{n}" for n in (
+    "loom/scroller.png", "stonecutter/scroller.png", "villager/scroller.png", "crafter/disabled_slot.png"))
+GRIGI_SOPRA = {255: (255, 224, 140), 139: (122, 72, 14), 104: (232, 168, 48), 85: (122, 72, 14), 55: (14, 5, 10),
+               0: (14, 5, 10)}
+
+
+def sovrapposta(img):
+    img = img.convert("RGBA")
+    px = img.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = px[x, y]
+            if a and r == g == b:
+                if r == 198:
+                    px[x, y] = (0, 0, 0, 0)
+                elif r in GRIGI_SOPRA:
+                    px[x, y] = GRIGI_SOPRA[r] + (a,)
+    return img
 
 
 def ricolora(img):
@@ -175,6 +202,10 @@ def main():
                 continue
             uscita = os.path.join(QUI, voce)
             if rel.startswith(SPRITE_PREFISSI):
+                scrivi(ricolora(Image.open(io.BytesIO(jar.read(voce)))), uscita)
+            elif rel in SOVRAPPOSTE:
+                scrivi(sovrapposta(Image.open(io.BytesIO(jar.read(voce)))), uscita)
+            elif rel in RICOLORATE:
                 scrivi(ricolora(Image.open(io.BytesIO(jar.read(voce)))), uscita)
             elif rel in INVISIBILI:
                 dim = Image.open(io.BytesIO(jar.read(voce))).size
