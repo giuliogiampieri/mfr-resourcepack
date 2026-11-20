@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Prototipo "GUI v3": due varianti complete da confrontare (richiesta del 20/11/2026, ore 12:15).
+"""Prototipo "GUI v3": varianti complete da confrontare (richieste del 20/11/2026, ore 12:15 e 12:26).
 
 Uso: python3 genera_gui_v3.py <jar del client Minecraft 26.3>
-Scrive solo in prototipi/gui-v3-A/ e prototipi/gui-v3-B/: il pacchetto pubblicato non cambia.
+Scrive solo in prototipi/gui-v3-A/, gui-v3-B/ e gui-v3-B2/: il pacchetto pubblicato non cambia.
 
 Caselle, oggetti, posizioni e dimensioni sono IDENTICI nelle due varianti (stesse funzioni di genera_gui_v2.py);
 cambiano solo intestazioni, sfondo e decorazioni della cornice. Il testo resta dove lo mette Minecraft (fornace:
@@ -15,6 +15,9 @@ B "Architrave": intestazione integrata nella cornice (lamina d'oro con pomoli al
   finestra: ci stanno anche i nomi lunghi); per "Inventario" una linguetta della stessa lamina su un binario sottile
   che divide la finestra; sfondo in pietra con intarsio a losanghe appena percettibile; cornice a doppio filo con
   rivetti.
+B2 (ibrida, 12:26): sfondo, cornice e caselle di B; titolo e "Inventario" in una fascia sottile a tutta larghezza
+  saldata alla cornice, campo pergamena scura / beige antico (desaturato), filetti di bronzo di mezzo pixel, ombra
+  corta sotto. Ci stanno i nomi lunghi.
 """
 import io
 import os
@@ -193,6 +196,27 @@ def binario(d, x0, y, x1):
     d.rectangle([x0 * S, y * S + 4, x1 * S - 1, y * S + 5], fill=OSSIDIANA)
 
 
+CAMPO_B2 = (182, 160, 124)          # pergamena scura / beige antico: contrasto ~4:1 col grigio 0x404040 del gioco
+LUCE_B2 = (196, 177, 142)
+FILETTO_B2 = (150, 118, 76)         # bronzo chiaro
+CAPELLO_B2 = (40, 20, 34)
+OMBRA_B2 = (34, 16, 29)
+
+
+def fascia(d, x0, x1, ty):
+    """B2: fascia sottile a tutta larghezza, saldata alla cornice (va da filo interno a filo interno). Campo alto
+    quanto il testo del gioco (righe ty..ty+7) più mezzo pixel sopra e sotto; filetti di mezzo pixel; ombra sotto."""
+    X0, X1 = x0 * S, x1 * S - 1
+    top, bot = ty * S - 2, (ty + 8) * S + 1                          # campo: da ty-0,5 a ty+8,5
+    d.rectangle([X0, top - 4, X1, top - 3], fill=CAPELLO_B2)          # capello scuro sopra (1/2 px)
+    d.rectangle([X0, top - 2, X1, top - 1], fill=FILETTO_B2)          # filetto di bronzo (1/2 px)
+    d.rectangle([X0, top, X1, bot], fill=CAMPO_B2)
+    d.rectangle([X0, top, X1, top + 1], fill=LUCE_B2)                # luce appena accennata in alto
+    d.rectangle([X0, bot + 1, X1, bot + 2], fill=FILETTO_B2)
+    d.rectangle([X0, bot + 3, X1, bot + 4], fill=CAPELLO_B2)
+    d.rectangle([X0, bot + 5, X1, bot + 6], fill=OMBRA_B2)            # ombra corta sullo sfondo
+
+
 # ---------------------------------------------------------------- composizione
 
 def ridisegna(orig, meta, variante, misura):
@@ -202,7 +226,7 @@ def ridisegna(orig, meta, variante, misura):
     out = big(a).copy()
     op4, g4, d4 = big(opaco), big(grigio), big(dist)
     dist4 = ndimage.distance_transform_cdt(np.pad(op4, 1), metric="chessboard")[1:-1, 1:-1]
-    sfondo = velluto(w, h) if variante == "A" else pietra_intarsiata(w, h)
+    sfondo = velluto(w, h) if variante == "A" else pietra_intarsiata(w, h)          # B e B2: stessa pietra
     fondo = op4 & (g4 == 198)
     out[fondo, :3] = sfondo[fondo]
     out[fondo, 3] = 255
@@ -228,7 +252,9 @@ def ridisegna(orig, meta, variante, misura):
     if meta["titolo"]:
         testo, tx, ty = meta["titolo"]
         larg = misura(testo)
-        if variante == "A":
+        if variante == "B2":
+            fascia(d, 3, meta["dim"][0] - 3, ty)
+        elif variante == "A":
             if tx == "centro":
                 lt = max(66, larg + 2 * MARGINE + 6)
                 x0 = (meta["dim"][0] - lt) // 2
@@ -240,7 +266,9 @@ def ridisegna(orig, meta, variante, misura):
     if meta["inv"]:
         ix, iy = meta["inv"]
         fine = ix + misura("Inventario") + MARGINE
-        if variante == "A":
+        if variante == "B2":
+            fascia(d, 3, meta["dim"][0] - 3, iy)
+        elif variante == "A":
             cartiglio(d, max(4, ix - MARGINE - 2), iy - 2, fine + 2, iy + 9)
         else:
             binario(d, 3, iy + 8, meta["dim"][0] - 3)                    # divisione sottile a tutta larghezza
@@ -249,7 +277,7 @@ def ridisegna(orig, meta, variante, misura):
         if variante == "A":
             for (x, y, sx, sy) in ((X0, 0, 1, 1), (X1, 0, -1, 1), (X0, finestra_alta, 1, -1), (X1, finestra_alta, -1, -1)):
                 filigrana(d, x, y, sx, sy)
-        else:
+        else:                                                          # B e B2: rivetti
             for (x, y) in ((1, finestra_alta - 3), (X1 - 3, finestra_alta - 3)):
                 rivetto(d, x, y)
     v2.tematici(d, meta["tema"], caselle)
@@ -262,7 +290,7 @@ def main():
     with zipfile.ZipFile(sys.argv[1]) as jar:
         misura = larghezze_font(jar)
         apri = lambda p: Image.open(io.BytesIO(jar.read(p)))
-        for variante in ("A", "B"):
+        for variante in ("A", "B", "B2"):
             base = os.path.join(QUI, "prototipi", f"gui-v3-{variante}")
             def scrivi(img, rel):
                 p = os.path.join(base, rel)

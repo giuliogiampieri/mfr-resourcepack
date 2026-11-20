@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Anteprime affiancate attuale | variante A | variante B del prototipo GUI v3 (campionamento "nearest").
 
-Uso: python3 prototipi/anteprima_gui_v3.py <jar del client 26.3> <cartella di uscita>
+Uso: python3 prototipi/anteprima_gui_v3.py <jar del client 26.3> <cartella di uscita> [varianti, es. B,B2]
 Oggetti, posizioni e caselle identici nelle tre colonne; etichette con il font del gioco nel grigio 0x404040.
 MOCKUP: posizioni dal codice del client 26.3; schede della creativa approssimate; baule da 3 righe.
 """
@@ -107,17 +107,17 @@ def main():
     uscita = sys.argv[2]
     os.makedirs(uscita, exist_ok=True)
     glifi = a2.font_gioco(jar)
-    fonti = [a2.Fonti(jar, QUI), a2.Fonti(jar, os.path.join(QUI, "prototipi", "gui-v3-A")),
-             a2.Fonti(jar, os.path.join(QUI, "prototipi", "gui-v3-B"))]
+    varianti = sys.argv[3].split(",") if len(sys.argv) > 3 else ["A", "B"]
+    fonti = [a2.Fonti(jar, QUI)] + [a2.Fonti(jar, os.path.join(QUI, "prototipi", f"gui-v3-{v}")) for v in varianti]
+    nomi = {"A": "A  Cartiglio", "B": "B  Architrave", "B2": "B2  Fascia sottile"}
     for nome, fn in (("fornace", fornace), ("tramoggia", tramoggia), ("baule", baule), ("banco", banco),
                      ("creativa", creativa)):
         for scala in (2, 3):
-            img = colonne([fn(f, jar, glifi) for f in fonti], [f"ATTUALE - scala {scala}", "A  Cartiglio",
-                                                                "B  Architrave"], scala)
+            img = colonne([fn(f, jar, glifi) for f in fonti], [f"ATTUALE - scala {scala}"] + [nomi[v] for v in varianti],
+                          scala)
             img.save(os.path.join(uscita, f"{nome}_scala{scala}.png"))
     lungo = "Fornace della Gilda dei Fabbri"
-    img = colonne([fornace(f, jar, glifi, lungo) for f in fonti[1:]], ["A  nome personalizzato lungo",
-                                                                       "B  nome personalizzato lungo"], 2)
+    img = colonne([fornace(f, jar, glifi, lungo) for f in fonti[1:]], [nomi[v] + " - nome lungo" for v in varianti], 2)
     img.save(os.path.join(uscita, "nome_lungo_scala2.png"))
     print("anteprime in", uscita)
 
