@@ -64,7 +64,8 @@ SOVRAPPOSTE = tuple(f"container/{n}" for n in (
     "grindstone/error.png", "smithing/error.png", "villager/out_of_stock.png", "villager/trade_arrow.png",
     "villager/trade_arrow_out_of_stock.png"))
 RICOLORATE = tuple(f"container/{n}" for n in (
-    "loom/scroller.png", "stonecutter/scroller.png", "villager/scroller.png", "crafter/disabled_slot.png"))
+    "loom/scroller.png", "stonecutter/scroller.png", "villager/scroller.png", "crafter/disabled_slot.png",
+    "creative_inventory/scroller.png", "creative_inventory/scroller_disabled.png"))
 GRIGI_SOPRA = {198: None, 255: ORO_CHIARO, 139: ORO_SCURO, 104: ORO, 85: ORO_SCURO, 55: OSSIDIANA, 0: OSSIDIANA}
 GRIGI_RICOLORA = {198: BORDEAUX, 255: ORO_CHIARO, 139: AMETISTA, 104: ORO, 85: ORO_SCURO, 55: OSSIDIANA,
                   0: OSSIDIANA}
