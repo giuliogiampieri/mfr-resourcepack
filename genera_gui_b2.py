@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Variante B2 (approvata dal proprietario il 20/11/2026) estesa a TUTTE le interfacce dei contenitori.
+"""Variante B2 (approvata dal proprietario il 20/11/2026, resa ufficiale alle 13:22) su TUTTE le interfacce dei
+contenitori. Sostituisce genera_contenitori.py (stile precedente a righine).
 
 Uso: python3 genera_gui_b2.py <jar del client Minecraft 26.3>
-Scrive solo in prototipi/gui-v3-B2/: il pacchetto pubblicato non cambia.
+     python3 genera_titoli_centrati.py <jar> <it_it.json del gioco> .
+     python3 genera_schermata.py            (Banco Magico e sportello, anch'essi in B2)
+     python3 costruisci.py
+Scrive in assets/ del pacchetto.
 
 Stesso disegno di genera_gui_v3.py (variante B2): pietra intarsiata, cornice a doppio filo con rivetti, caselle
 incassate, fascia sottile a tutta larghezza dietro le scritte. Per ogni schermata le scritte stanno dove le mette il
@@ -23,7 +27,7 @@ import genera_gui_v3 as v3
 from genera_gui_v2 import S, OSSIDIANA, BORDEAUX, AMETISTA, ORO, ORO_CHIARO, ORO_SCURO, FILETTO, RAME, casella, analizza
 
 QUI = os.path.dirname(os.path.abspath(__file__))
-BASE = os.path.join(QUI, "prototipi", "gui-v3-B2")
+BASE = QUI
 CONT, SPR = v2.CONT, v2.SPR
 CENTRO = "centro"
 
