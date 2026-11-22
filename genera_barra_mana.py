@@ -3,7 +3,7 @@
 
 Il server mostra il mana nella barra dell'esperienza (numero = mana, 0-100). Questo script disegna solo il
 riempimento (sprite hud/experience_bar_progress, 182x5); lo sfondo della barra resta quello del gioco.
-Disegno originale, a righe di colore: bordo scuro, riflesso chiaro in alto, corpo blu.
+Disegno originale, a righe di colore: riflesso chiaro in alto, corpo blu, ombra in basso, estremi scuri.
 
 Uso: python3 genera_barra_mana.py   → scrive assets/minecraft/textures/gui/sprites/hud/experience_bar_progress.png
 """
@@ -18,14 +18,16 @@ RIFLESSO = (150, 214, 255, 255)
 CORPO = (46, 128, 236, 255)
 OMBRA = (28, 88, 190, 255)
 
+# Il gioco disegna la barra sempre alta 5 pixel: per farla sembrare più spessa il riempimento usa tutte e 5 le righe
+# (copre anche il bordo scuro dello sfondo), con riflesso in alto, ombra in basso ed estremi scuri.
 img = Image.new("RGBA", (L, A), (0, 0, 0, 0))
 for x in range(L):
     for y in range(A):
-        if y in (0, A - 1) or x in (0, L - 1):
+        if x in (0, L - 1):
             c = BORDO
-        elif y == 1:
+        elif y == 0:
             c = RIFLESSO
-        elif y == A - 2:
+        elif y == A - 1:
             c = OMBRA
         else:
             c = CORPO
