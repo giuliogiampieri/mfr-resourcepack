@@ -14,7 +14,7 @@ Resource pack pubblico di **Minecraft Fantasy Roleplay** (il codice del server �
   pulsanti usano `assets/mfr/items/fidoro_<valore>.json` (componente `item_model`). Si rigenerano dal disegno in
   `sorgenti/banco-schermata.png` con `python3 genera_schermata.py`.
 - **Barra del mana** (riempimento blu della barra dell'esperienza, dove il server mostra il mana 0–100):
-  `assets/minecraft/textures/gui/sprites/hud/experience_bar_progress.png`, 182×5 a tutta altezza (sembra più spessa), disegno originale generato da
+  `assets/minecraft/textures/gui/sprites/hud/experience_bar_progress.png`, 182×5 a tutta altezza (sembra più spessa), sfumata da blu a viola, disegno originale generato da
   `python3 genera_barra_mana.py`. Lo sfondo della barra e il numero (verde) restano quelli del gioco.
 - `sorgenti/`: immagini originali fornite dal proprietario, da cui sono ricavate le texture.
 
