@@ -14,7 +14,13 @@
     ],
     "fallback": {
       "type": "minecraft:model",
-      "model": "minecraft:item/glass_bottle"
+      "model": "minecraft:item/potion",
+      "tints": [
+        {
+          "type": "minecraft:potion",
+          "default": -13083194
+        }
+      ]
     }
   }
 }

@@ -138,8 +138,8 @@
     {
       "type": "bitmap",
       "file": "mfr:font/hud/mana_icona.png",
-      "height": 9,
-      "ascent": -34,
+      "height": 7,
+      "ascent": -35,
       "chars": [
         "\ue160"
       ]

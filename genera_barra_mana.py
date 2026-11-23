@@ -16,6 +16,9 @@ from PIL import Image
 QUI = pathlib.Path(__file__).resolve().parent
 CARTELLA = QUI / "assets/minecraft/textures/gui/sprites/hud"
 L, A = 182, 5
+# Dal 23/11 (17:21) la fiala comincia 9 pixel più a destra: lì, sopra la hotbar, c'è il cristallo del mana (font
+# mfr:hud). Il server riscala il riempimento (ModuloMana) perché la parte piena corrisponda al mana.
+X0 = 9
 # Sfumatura da sinistra a destra, scelta dal proprietario il 22/11/2026 (variante A): blu -> viola.
 INIZIO = (40, 110, 235)
 FINE = (150, 70, 240)
@@ -38,7 +41,7 @@ def chiaro(c, f):
 
 def dentro(x, y):
     """Estremi arrotondati: i quattro angoli restano trasparenti."""
-    return not (x in (0, L - 1) and y in (0, A - 1))
+    return x >= X0 and not (x in (X0, L - 1) and y in (0, A - 1))
 
 
 def fiala_vuota():
@@ -51,7 +54,7 @@ def fiala_vuota():
                 c, a = VETRO_ALTO, 190
             elif y == A - 1:
                 c, a = VETRO_BASSO, 190
-            elif x in (0, L - 1):
+            elif x in (X0, L - 1):
                 c, a = VETRO_LATO, 190
             elif y == 1:
                 c, a = (60, 66, 92), 205        # riflesso tenue sul vetro vuoto
@@ -64,7 +67,7 @@ def fiala_vuota():
 def liquido():
     im = Image.new("RGBA", (L, A), (0, 0, 0, 0))
     for x in range(L):
-        base = misto(INIZIO, FINE, x / (L - 1))
+        base = misto(INIZIO, FINE, max(0, x - X0) / (L - 1 - X0))
         for y in range(A):
             if not dentro(x, y):
                 continue
@@ -72,7 +75,7 @@ def liquido():
                 c, a = misto(VETRO_ALTO, base, 0.35), 230            # vetro colorato dal liquido
             elif y == A - 1:
                 c, a = misto(VETRO_BASSO, scuro(base, 0.55), 0.6), 230
-            elif x in (0, L - 1):
+            elif x in (X0, L - 1):
                 c, a = misto(VETRO_LATO, scuro(base, 0.6), 0.5), 230
             elif y == 1:
                 c, a = chiaro(base, 0.38), 255                       # riflesso del vetro sul liquido
@@ -81,9 +84,9 @@ def liquido():
             else:
                 c, a = base, 255
             im.putpixel((x, y), c + (a,))
-    for x in range(3, 14):                                           # lampo di luce vicino all'estremo sinistro
+    for x in range(X0 + 3, X0 + 14):                                           # lampo di luce vicino all'estremo sinistro
         r, g, b, a = im.getpixel((x, 1))
-        t = max(0.0, 1 - abs(x - 8) / 6)
+        t = max(0.0, 1 - abs(x - (X0 + 8)) / 6)
         im.putpixel((x, 1), chiaro((r, g, b), 0.35 * t) + (a,))
     return im
 
