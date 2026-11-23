@@ -5,9 +5,12 @@ Decisioni del proprietario (22/11/2026): barre disegnate da noi; vita con contor
 tacche per contare i cuori; fame e sete con contorno argentato. Il 23/11 il proprietario ha lasciato a Claude il primo
 disegno di vita e fame ("poi al massimo le aggiustiamo"). Icona della fame (coscia) e della sete (goccia): proposta.
 
-Ogni barra è larga 82 pixel e alta 9, come la fila dei cuori: icona 9x9, un pixel vuoto, fiala di 72x7 (interno di
-70 pixel, 7 per cuore: le tacche cadono ogni 2 punti di vita). Il server le disegnerà come caratteri di un font nella
-barra delle azioni: sfondo (fiala vuota con icona e tacche), poi uno spazio negativo e il liquido del livello giusto.
+Richiesta del proprietario del 23/11 (17:06): le tre barre nella stessa fila, quella dei cuori, nell'ordine vita, fame,
+sete (la fila sopra resta alle bolle d'aria e all'armatura del gioco), e un'icona anche accanto alla barra del mana.
+Ogni barra è larga 52 pixel e alta 9: icona 9x9, un pixel vuoto, fiala di 42x7 (interno di 40 pixel: 2 per punto,
+4 per cuore, le tacche cadono ogni cuore). Fra una barra e l'altra 13 pixel: in tutto 182, la larghezza della hotbar.
+Il server le disegna come caratteri di un font nella barra delle azioni: sfondo (fiala vuota con icona e tacche),
+poi uno spazio negativo e il liquido del livello giusto. L'icona del mana sta a sinistra della barra dell'esperienza.
 
 Uso: python3 genera_barre_hud.py
   → assets/mfr/textures/font/hud/<barra>_vuota.png    (82x9: icona, vetro vuoto, tacche)
@@ -20,9 +23,9 @@ from PIL import Image
 
 QUI = pathlib.Path(__file__).resolve().parent
 CARTELLA = QUI / "assets/mfr/textures/font/hud"
-L, A = 82, 9
-FX0, FX1, FY0, FY1 = 10, 81, 1, 7          # fiala: colonne 10..81, righe 1..7 (contorno compreso)
-INTERNO = FX1 - FX0 - 1                    # 70 pixel di liquido
+L, A = 52, 9
+FX0, FX1, FY0, FY1 = 10, 51, 1, 7          # fiala: colonne 10..51, righe 1..7 (contorno compreso)
+INTERNO = FX1 - FX0 - 1                    # 40 pixel di liquido
 LIVELLI = 21                               # 0..20
 
 ORO = dict(alto=(255, 226, 130), basso=(150, 98, 30), lato=(222, 172, 70))
@@ -59,6 +62,17 @@ ICONE = {
         ".KoooddK.",
         "..KKKKK..",
     ],
+    "mana": [
+        "....K....",
+        "...KlK...",
+        "..KlbbK..",
+        ".KlbbbpK.",
+        "KlbbbppvK",
+        ".KbbppvK.",
+        "..KppvK..",
+        "...KvK...",
+        "....K....",
+    ],
     "goccia": [
         "....K....",
         "...KbK...",
@@ -73,7 +87,8 @@ ICONE = {
 }
 COLORI = {"K": (34, 16, 20), "r": (220, 40, 48), "d": (140, 18, 28), "w": (255, 235, 225), "o": (200, 120, 50),
           "y": (240, 190, 110), "b": (60, 160, 230)}
-COLORI_ICONA = {"goccia": {"d": (30, 90, 170)}, "coscia": {"d": (130, 70, 25), "w": (245, 235, 215)}}
+COLORI_ICONA = {"mana": {"l": (215, 230, 255), "b": (60, 120, 240), "p": (130, 80, 240), "v": (90, 45, 170)},
+                "goccia": {"d": (30, 90, 170)}, "coscia": {"d": (130, 70, 25), "w": (245, 235, 215)}}
 
 
 def misto(a, b, t):
@@ -98,9 +113,9 @@ def bordo(x, y):
 
 
 def tacca(x):
-    """Ogni 2 punti di vita (7 pixel di liquido) una tacca, esclusi gli estremi."""
+    """Ogni 2 punti di vita (4 pixel di liquido) una tacca, esclusi gli estremi."""
     i = x - FX0 - 1
-    return 0 < i < INTERNO and i % 7 == 6
+    return 0 < i < INTERNO and i % 4 == 3
 
 
 def icona(im, nome):
@@ -136,7 +151,7 @@ def vuota(b):
 
 
 def liquido(b, livello):
-    """Livello 0..20: riempie round(70 * livello / 20) pixel dell'interno; il resto è trasparente."""
+    """Livello 0..20: riempie 2 pixel per punto (round(40 * livello / 20)); il resto è trasparente."""
     im = Image.new("RGBA", (L, A), (0, 0, 0, 0))
     pieni = round(INTERNO * livello / 20)
     for i in range(pieni):
@@ -153,11 +168,11 @@ def liquido(b, livello):
                 p = misto(p, b["cornice"]["basso"], 0.55)       # tacca visibile anche sul liquido
             im.putpixel((x, y), p + (255,))
     # Il gioco misura la larghezza di un carattere bitmap fino all'ultima colonna non trasparente: un pixel quasi
-    # invisibile (alfa 1) nell'ultima colonna tiene ogni livello largo 82, anche il livello 0.
+    # invisibile (alfa 1) nell'ultima colonna tiene ogni livello largo 52, anche il livello 0.
     im.putpixel((L - 1, A // 2), (0, 0, 0, 1))
-    for x in range(FX0 + 3, min(FX0 + 1 + pieni, FX0 + 12)):    # lampo di luce vicino all'estremo sinistro
+    for x in range(FX0 + 3, min(FX0 + 1 + pieni, FX0 + 10)):    # lampo di luce vicino all'estremo sinistro
         r, g, bl, a = im.getpixel((x, FY0 + 1))
-        t = max(0.0, 1 - abs(x - (FX0 + 7)) / 5)
+        t = max(0.0, 1 - abs(x - (FX0 + 6)) / 4)
         im.putpixel((x, FY0 + 1), chiaro((r, g, bl), 0.35 * t) + (a,))
     return im
 
@@ -169,11 +184,13 @@ def foglio(b):
     return im
 
 
-# Font mfr:hud: spazi (+1..+128, -1..-128) e barre. Altezza dalla riga della barra delle azioni (in alto a y = -72 dal
-# fondo dello schermo): un carattere con ascent a ha il bordo alto a -72 + 7 - a. Fila dei cuori (-39): a = -26;
-# fila sopra (-49), quella della sete: a = -16.
+# Font mfr:hud: spazi (+1..+128, -1..-128), barre e icona del mana. Altezza dalla riga della barra delle azioni (in
+# alto a y = -72 dal fondo dello schermo): un carattere con ascent a ha il bordo alto a -72 + 7 - a. Fila dei cuori
+# (-39): a = -26. Icona del mana, centrata sulla barra dell'esperienza (-29..-24): bordo alto a -31, a = -34.
 PRIMO = {"vita": 0xE100, "fame": 0xE120, "sete": 0xE140}
-ASCENT = {"vita": -26, "fame": -26, "sete": -16}
+ASCENT = {"vita": -26, "fame": -26, "sete": -26}
+ICONA_MANA = 0xE160
+ASCENT_MANA = -34
 
 
 def font():
@@ -185,6 +202,8 @@ def font():
                      "ascent": ASCENT[nome], "chars": [chr(PRIMO[nome])]})
         prov.append({"type": "bitmap", "file": f"mfr:font/hud/{nome}_liquido.png", "height": A,
                      "ascent": ASCENT[nome], "chars": [chr(PRIMO[nome] + 1 + i) for i in range(LIVELLI)]})
+    prov.append({"type": "bitmap", "file": "mfr:font/hud/mana_icona.png", "height": A, "ascent": ASCENT_MANA,
+                 "chars": [chr(ICONA_MANA)]})
     return {"providers": prov}
 
 
@@ -215,3 +234,7 @@ if __name__ == "__main__":
             p = CARTELLA / f"{nome}_{suffisso}.png"
             img.save(p, optimize=True)
             print(f"{p.relative_to(QUI)}: {img.width}x{img.height}")
+    m = Image.new("RGBA", (9, 9), (0, 0, 0, 0))
+    icona(m, "mana")
+    m.save(CARTELLA / "mana_icona.png", optimize=True)
+    print("assets/mfr/textures/font/hud/mana_icona.png: 9x9")

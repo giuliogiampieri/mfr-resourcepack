@@ -101,7 +101,7 @@
       "type": "bitmap",
       "file": "mfr:font/hud/sete_vuota.png",
       "height": 9,
-      "ascent": -16,
+      "ascent": -26,
       "chars": [
         "\ue140"
       ]
@@ -110,7 +110,7 @@
       "type": "bitmap",
       "file": "mfr:font/hud/sete_liquido.png",
       "height": 9,
-      "ascent": -16,
+      "ascent": -26,
       "chars": [
         "\ue141",
         "\ue142",
@@ -133,6 +133,15 @@
         "\ue153",
         "\ue154",
         "\ue155"
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "mfr:font/hud/mana_icona.png",
+      "height": 9,
+      "ascent": -34,
+      "chars": [
+        "\ue160"
       ]
     }
   ]
