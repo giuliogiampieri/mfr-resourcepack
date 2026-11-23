@@ -43,7 +43,10 @@ SCHERMATE = {
     "blast_furnace.png": dict(scritte=[(CENTRO, 6), (8, 72)], tema="fornace"),
     "smoker.png": dict(scritte=[(CENTRO, 6), (8, 72)], tema="fornace"),
     "crafting_table.png": dict(scritte=[(29, 6), (8, 72)], tema="banco"),
-    "inventory.png": dict(scritte=[(97, 8)]),
+    # Inventario: il gioco scrive "Fabbricazione" a (97, 6) (titolo di AbstractContainerScreen, y = 6; prima qui 8 per
+    # errore: il testo sporgeva sopra la fascia). Fascia stretta e centrata sul testo italiano (69 px, x 97..165)
+    # invece che allargata fino al riquadro del personaggio (richiesta del proprietario del 23/11).
+    "inventory.png": dict(scritte=[(97, 6)], fasce=[(93, 170)]),
     "brewing_stand.png": dict(scritte=[(CENTRO, 6), (8, 72)]),
     "enchanting_table.png": dict(scritte=[(8, 6), (8, 72)]),
     "anvil.png": dict(scritte=[(60, 6), (8, 72)]),
@@ -160,11 +163,13 @@ def ridisegna(orig, meta, nome, misura):
     X0, X1, Y1 = xs.min(), xs.max() + 1, ys.max() + 1
     larghezza = X1 - X0
     fatte = set()
-    for x, ty in meta["scritte"]:
+    for i, (x, ty) in enumerate(meta["scritte"]):
         larg = 30 if x == CENTRO else 20                    # testo minimo da tenere libero (nomi brevi)
         xt = X0 + (larghezza - larg) // 2 if x == CENTRO else x
         x0, x1, sotto, sopra = estensione(grigio, dist, xt, larg, ty, nome)
         x0, x1 = max(x0, X0 + 3), min(x1, X1 - 3)
+        if "fasce" in meta:                                 # fascia di misura fissa, dentro lo spazio libero
+            x0, x1 = max(x0, meta["fasce"][i][0]), min(x1, meta["fasce"][i][1])
         if (x0, x1, ty) in fatte:
             continue
         fatte.add((x0, x1, ty))
