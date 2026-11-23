@@ -42,11 +42,13 @@ SCHERMATE = {
     "furnace.png": dict(scritte=[(CENTRO, 6), (8, 72)], tema="fornace"),
     "blast_furnace.png": dict(scritte=[(CENTRO, 6), (8, 72)], tema="fornace"),
     "smoker.png": dict(scritte=[(CENTRO, 6), (8, 72)], tema="fornace"),
-    "crafting_table.png": dict(scritte=[(29, 6), (8, 72)], tema="banco"),
-    # Inventario: il gioco scrive "Fabbricazione" a (97, 6) (titolo di AbstractContainerScreen, y = 6; prima qui 8 per
-    # errore: il testo sporgeva sopra la fascia). Fascia stretta e centrata sul testo italiano (69 px, x 97..165)
-    # invece che allargata fino al riquadro del personaggio (richiesta del proprietario del 23/11).
-    "inventory.png": dict(scritte=[(97, 6)], fasce=[(93, 170)]),
+    # Banco da lavoro e inventario hanno lo stesso titolo (container.crafting): il pacchetto lo disegna 2 pixel più in
+    # basso e lo sposta in orizzontale (genera_titoli_centrati.py, richiesta del proprietario del 23/11), qui a (21, 8)
+    # in italiano: fascia a ty = 7, centrata in altezza sul testo (ty = 8 toccherebbe le caselle).
+    "crafting_table.png": dict(scritte=[(21, 7), (8, 72)], tema="banco"),
+    # Inventario: il gioco scrive il titolo a (97, 6); il pacchetto lo disegna a y = 8 e centrato nella fascia
+    # (x 76..171), vedi sopra. La fascia resta quella originale (richiesta del proprietario del 23/11).
+    "inventory.png": dict(scritte=[(97, 8)]),
     "brewing_stand.png": dict(scritte=[(CENTRO, 6), (8, 72)]),
     "enchanting_table.png": dict(scritte=[(8, 6), (8, 72)]),
     "anvil.png": dict(scritte=[(60, 6), (8, 72)]),
@@ -163,13 +165,11 @@ def ridisegna(orig, meta, nome, misura):
     X0, X1, Y1 = xs.min(), xs.max() + 1, ys.max() + 1
     larghezza = X1 - X0
     fatte = set()
-    for i, (x, ty) in enumerate(meta["scritte"]):
+    for x, ty in meta["scritte"]:
         larg = 30 if x == CENTRO else 20                    # testo minimo da tenere libero (nomi brevi)
         xt = X0 + (larghezza - larg) // 2 if x == CENTRO else x
         x0, x1, sotto, sopra = estensione(grigio, dist, xt, larg, ty, nome)
         x0, x1 = max(x0, X0 + 3), min(x1, X1 - 3)
-        if "fasce" in meta:                                 # fascia di misura fissa, dentro lo spazio libero
-            x0, x1 = max(x0, meta["fasce"][i][0]), min(x1, meta["fasce"][i][1])
         if (x0, x1, ty) in fatte:
             continue
         fatte.add((x0, x1, ty))
