@@ -32,6 +32,11 @@ TITOLI = {
     "container.cartography_table": 8, "container.stonecutter": 8,
     "container.inventory": 8,           # "Inventario": x = 8 (villico: 107, area larga uguale)
 }
+# Titolo dell'inventario (e del banco da lavoro, stessa voce): il gioco lo scrive a (97, 6), sopra la fascia del
+# pacchetto (y 7,5..16,5). Il pacchetto lo disegna con una copia delle lettere 2 pixel più in basso (font
+# minecraft:default, \uE000 + codice ASCII, ascent 5 invece di 7) e lo centra nella fascia x 76..171 con spazi positivi
+# o negativi (\uF801.. = -1, -2, -4, -8). Richiesta del proprietario del 23/11.
+SPOSTATI = {"container.crafting": (97, 76, 171, 2)}     # voce -> (x del gioco, inizio fascia, fine fascia, giù di)
 
 
 def avanzamenti(jar):
@@ -54,6 +59,18 @@ def spazio(px):
     return s
 
 
+def spazio_firmato(px):
+    """Come spazio(), anche negativo (\uF801.. = -1, -2, -4, -8)."""
+    if px >= 0:
+        return spazio(px)
+    s, px = "", -px
+    for i in range(3, -1, -1):
+        while px >= 1 << i:
+            s += chr(0xF801 + i)
+            px -= 1 << i
+    return s
+
+
 def main():
     jar = zipfile.ZipFile(sys.argv[1])
     it = json.load(open(sys.argv[2], encoding="utf-8"))
@@ -70,14 +87,23 @@ def main():
             px = (LARGHEZZA_FINESTRA - larghezza) // 2 - x0
             voci[chiave] = spazio(px) + testo if px > 0 else testo
             print(f"{nome} {chiave}: '{testo}' largo {larghezza}, spostato di {max(px, 0)}")
+        for chiave, (x_gioco, a, b, giu) in SPOSTATI.items():
+            testo = lingua[chiave]
+            larghezza = sum(w[ch] for ch in testo)
+            px = round((a + b) / 2 - (larghezza - 1) / 2) - x_gioco
+            voci[chiave] = spazio_firmato(px) + "".join(chr(0xE000 + ord(ch)) for ch in testo)
+            print(f"{nome} {chiave}: '{testo}' largo {larghezza}, spostato di {px} e {giu} in giù")
         os.makedirs(os.path.join(dest, "assets", "minecraft", "lang"), exist_ok=True)
         with open(os.path.join(dest, "assets", "minecraft", "lang", nome + ".json"), "w", encoding="utf-8") as f:
             json.dump(voci, f, ensure_ascii=True, indent=2)
             f.write("\n")
     os.makedirs(os.path.join(dest, "assets", "minecraft", "font"), exist_ok=True)
     with open(os.path.join(dest, "assets", "minecraft", "font", "default.json"), "w", encoding="utf-8") as f:
-        json.dump({"providers": [{"type": "space", "advances": {chr(0xF821 + i): 1 << i for i in range(10)}}]},
-                  f, ensure_ascii=True, indent=2)
+        spazi = {chr(0xF821 + i): 1 << i for i in range(10)}
+        spazi.update({chr(0xF801 + i): -(1 << i) for i in range(4)})
+        giu = {"type": "bitmap", "file": "minecraft:font/ascii.png", "ascent": 7 - 2,
+               "chars": ["".join(chr(0xE000 + r * 16 + c) for c in range(16)) for r in range(16)]}
+        json.dump({"providers": [{"type": "space", "advances": spazi}, giu]}, f, ensure_ascii=True, indent=2)
         f.write("\n")
 
 

@@ -8,5 +8,6 @@
   "container.grindstone_title": "\uf826Ripara e disincanta",
   "container.cartography_table": "\uf826\uf825\uf822Cartografia",
   "container.stonecutter": "\uf826\uf825\uf822Tagliapietre",
-  "container.inventory": "\uf826\uf825\uf823\uf822Inventario"
+  "container.inventory": "\uf826\uf825\uf823\uf822Inventario",
+  "container.crafting": "\uf804\ue046\ue061\ue062\ue062\ue072\ue069\ue063\ue061\ue07a\ue069\ue06f\ue06e\ue065"
 }

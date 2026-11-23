@@ -8,5 +8,6 @@
   "container.grindstone_title": "\uf825\uf824\uf823\uf822Repair & Disenchant",
   "container.cartography_table": "\uf826Cartography Table",
   "container.stonecutter": "\uf826\uf825\uf822Stonecutter",
-  "container.inventory": "\uf826\uf825\uf823\uf822\uf821Inventory"
+  "container.inventory": "\uf826\uf825\uf823\uf822\uf821Inventory",
+  "container.crafting": "\uf823\uf822\uf821\ue043\ue072\ue061\ue066\ue074\ue069\ue06e\ue067"
 }

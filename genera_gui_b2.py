@@ -42,7 +42,12 @@ SCHERMATE = {
     "furnace.png": dict(scritte=[(CENTRO, 6), (8, 72)], tema="fornace"),
     "blast_furnace.png": dict(scritte=[(CENTRO, 6), (8, 72)], tema="fornace"),
     "smoker.png": dict(scritte=[(CENTRO, 6), (8, 72)], tema="fornace"),
-    "crafting_table.png": dict(scritte=[(29, 6), (8, 72)], tema="banco"),
+    # Banco da lavoro e inventario hanno lo stesso titolo (container.crafting): il pacchetto lo disegna 2 pixel più in
+    # basso e lo sposta in orizzontale (genera_titoli_centrati.py, richiesta del proprietario del 23/11), qui a (21, 8)
+    # in italiano: fascia a ty = 7, centrata in altezza sul testo (ty = 8 toccherebbe le caselle).
+    "crafting_table.png": dict(scritte=[(21, 7), (8, 72)], tema="banco"),
+    # Inventario: il gioco scrive il titolo a (97, 6); il pacchetto lo disegna a y = 8 e centrato nella fascia
+    # (x 76..171), vedi sopra. La fascia resta quella originale (richiesta del proprietario del 23/11).
     "inventory.png": dict(scritte=[(97, 8)]),
     "brewing_stand.png": dict(scritte=[(CENTRO, 6), (8, 72)]),
     "enchanting_table.png": dict(scritte=[(8, 6), (8, 72)]),
