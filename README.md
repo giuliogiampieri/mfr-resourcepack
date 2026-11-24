@@ -17,6 +17,11 @@ Resource pack pubblico di **Minecraft Fantasy Roleplay** (il codice del server �
   **fiala di vetro**: `assets/minecraft/textures/gui/sprites/hud/experience_bar_background.png` (fiala vuota) ed
   `experience_bar_progress.png` (liquido sfumato da blu a viola), 182×5, estremi arrotondati, disegno originale
   generato da `python3 genera_barra_mana.py`.
+- **Modelli 3D di BetterModel** (Goblin, `aisaryn_goblin`): `assets/bettermodel/`, copiati dal pacchetto che
+  BetterModel genera sul server (`plugins/BetterModel/build.zip`) con
+  `python3 importa_bettermodel.py <build.zip> aisaryn_goblin`; entrano solo gli oggetti del modello e ciò a cui
+  rimandano. I nomi interni sono offuscati e dipendono dai modelli presenti sul server: **a ogni modello aggiunto o
+  cambiato** si rigenera `build.zip` sul server e si rifà l'importazione.
 - `sorgenti/`: immagini originali fornite dal proprietario, da cui sono ricavate le texture.
 
 ## Costruire e pubblicare
